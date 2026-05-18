@@ -8,14 +8,14 @@
 # sn_register_key: The data point key for reading SN (e.g., "device_sn")
 # model_register_key: The data point key to override with product name (default: "device_model")
 product_info:
-  default_name: "Anker Solix Test Product"
+  default_name: "Anker SOLIX Solarbank 4 E5000 Pro"
   sn_register_key: "device_sn"
   model_register_key: "device_model"
   auto_mode_on_connect: 3
   product_code_mapping:
-    # Anker Solix Test Product
-    "DN7M": "Anker Solix Test Product"
-    "DPM4": "Anker Solix Test Product"
+    # Anker SOLIX Solarbank 4 E5000 Pro
+    "DN7M": "Anker SOLIX Solarbank 4 E5000 Pro"
+    "DPM4": "Anker SOLIX Solarbank 4 E5000 Pro"
 
 # Batch read ranges with register type specification
 # holding: read_holding_registers (function code 03) - for RW registers
