@@ -75,15 +75,52 @@ class ModbusLocalDeviceSensor(AnkerSolixBaseEntity, SensorEntity):
         """Initialize sensor."""
         super().__init__(coordinator, key, config)
 
-        # Check if there is value mapping
         has_value_mapping = bool(config.get("value_mapping"))
 
-        # For sensors with value mapping, use ENUM device class
         if has_value_mapping:
             self._attr_device_class = SensorDeviceClass.ENUM
             self._attr_options = list(config["value_mapping"].values())
         else:
             self._setup_numeric_sensor(config)
+
+    @property
+    def available(self) -> bool:
+        """Return if entity is available, respecting version_gate and visibility_entity gates."""
+        if not self.coordinator.is_connected():
+            return False
+
+        if self._register_address is not None:
+            if not self.coordinator.is_register_available(self._register_address):
+                return False
+
+        version_gate = self._config.get("version_gate")
+        if version_gate:
+            visible_key = f"{self._entity_key}_visible"
+            if self.coordinator.data:
+                visible = self.coordinator.data.get(visible_key)
+                if visible is not None:
+                    try:
+                        return int(visible) == 1
+                    except (ValueError, TypeError):
+                        return False
+            return False
+
+        # Check visibility_entity (legacy mechanism)
+        visibility_entity = self._config.get("visibility_entity")
+        if not visibility_entity:
+            return True
+
+        if not self.coordinator.data:
+            return False
+
+        visibility_value = self._config.get("visibility_value")
+        current_value = self.coordinator.data.get(visibility_entity)
+        if current_value is None:
+            return False
+        try:
+            return int(current_value) == int(visibility_value)
+        except (ValueError, TypeError):
+            return False
 
     def _setup_numeric_sensor(self, config: dict[str, Any]) -> None:
         """Set up attributes for numeric sensor."""
@@ -118,7 +155,7 @@ class ModbusLocalDeviceSensor(AnkerSolixBaseEntity, SensorEntity):
 
         # Set state class
         if unit in [UnitOfEnergy.KILO_WATT_HOUR, UnitOfEnergy.WATT_HOUR, "kWh", "Wh"]:
-            self._attr_state_class = SensorStateClass.TOTAL
+            self._attr_state_class = SensorStateClass.TOTAL_INCREASING
         elif unit and unit != "/":
             self._attr_state_class = SensorStateClass.MEASUREMENT
 

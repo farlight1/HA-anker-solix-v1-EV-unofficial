@@ -33,7 +33,28 @@
       "message": "La puissance de charge disponible de l'appareil n'est que de {power} W (minimum requis : 100 W), la puissance de charge ne peut donc pas être réglée. Veuillez vérifier l'appareil."
     },
     "discharge_power_too_low": {
-      "message": "La puissance de décharge disponible de l'appareil n'est que de {power} W (minimum requis : 100 W), la puissance de décharge ne peut donc pas être réglée. Veuillez vérifier l'appareil."
+      "message": "La puissance de décharge disponible de l'appareil n'est que de {power}W (minimum requis : 100W), impossible de régler la puissance de décharge, veuillez vérifier l'appareil."
+    },
+    "soc_must_be_greater_than": {
+      "message": "La valeur {entity} de {value}% doit être supérieure à {target} ({target_value}%). Veuillez ajuster les réglages."
+    },
+    "soc_must_be_greater_than_or_equal": {
+      "message": "La valeur {entity} de {value}% doit être supérieure ou égale à {target} ({target_value}%). Veuillez ajuster les réglages."
+    },
+    "soc_must_be_less_than": {
+      "message": "La valeur {entity} de {value}% doit être inférieure à {target} ({target_value}%). Veuillez ajuster les réglages."
+    },
+    "soc_must_be_less_than_or_equal": {
+      "message": "La valeur {entity} de {value}% doit être inférieure ou égale à {target} ({target_value}%). Veuillez ajuster les réglages."
+    },
+    "write_condition_not_met": {
+      "message": "Impossible de définir cette valeur car la condition requise n'est pas remplie. Veuillez vérifier l'état de l'appareil."
+    },
+    "enable_backup_soc_first": {
+      "message": "Cette fonctionnalité nécessite d'activer l'interrupteur de réserve de secours dans les paramètres de l'application Anker."
+    },
+    "power_range_1_to_99_not_allowed": {
+      "message": "La puissance ne peut pas être réglée dans la plage de {forbidden_min}-{forbidden_max}W. Veuillez régler 0W ou {allowed_min}-{allowed_max}W."
     }
   },
   "entity": {
@@ -112,6 +133,13 @@
           "charging": "Charge",
           "discharging": "Décharge",
           "sleep": "Mode veille"
+        }
+      },
+      "backup_soc_enable": {
+        "name": "Activation SOC de secours",
+        "state": {
+          "disabled": "Désactivé",
+          "enabled": "Activé"
         }
       },
       "meter_model": {
@@ -221,10 +249,25 @@
         }
       },
       "battery_power_direction": {
-        "name": "Contrôle de charge et de décharge",
+        "name": "Flux de puissance",
         "state": {
-          "charge": "Charge",
-          "discharge": "Décharge"
+          "charge": "Prélèvement réseau",
+          "discharge": "Injection réseau"
+        }
+      },
+      "export_power_control": {
+        "name": "Méthode de contrôle de la puissance d'exportation",
+        "state": {
+          "disabled": "Désactivé",
+          "percentage_control": "Contrôle en pourcentage",
+          "fixed_value_control": "Contrôle en valeur fixe"
+        }
+      },
+      "power_on_off_control": {
+        "name": "Contrôle marche/arrêt",
+        "state": {
+          "power_on": "Marche",
+          "power_off": "Arrêt"
         }
       }
     },
@@ -233,10 +276,25 @@
         "name": "Consigne charge/décharge batterie"
       },
       "battery_power_setpoint": {
-        "name": "Puissance de charge/décharge définie"
+        "name": "Puissance de consigne"
+      },
+      "charging_limit_soc": {
+        "name": "Limite supérieure de charge"
+      },
+      "discharge_limit_soc": {
+        "name": "Limite de décharge"
+      },
+      "backup_reserve_soc": {
+        "name": "Réserve de secours"
+      },
+      "ac_active_power_percent": {
+        "name": "Pourcentage d'ajustement de la puissance active"
       }
     },
     "switch": {
+      "power_on_off_control": {
+        "name": "Interrupteur de sortie"
+      },
       "power_switch": {
         "name": "Interrupteur de prise"
       }

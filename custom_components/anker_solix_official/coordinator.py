@@ -78,6 +78,11 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         self._io_lock = asyncio.Lock()
         self._selected_config_file: str | None = None
         self._ever_connected: bool = False
+        # Persistent flag: True once the initial auto-mode-set has been
+        # successfully delivered (or device was already in target mode).
+        # Stored in entry.options so it survives HA restarts without
+        # triggering an entry reload (unlike entry.data).
+        self._initial_mode_sent: bool = entry.options.get("initial_mode_sent", False)
 
         # Use async resource manager for background task management
         self._resource_manager = AsyncResourceManager()
@@ -97,6 +102,8 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         self._throttled_logger = ThrottledLogger(
             self.logger, default_interval=LOG_THROTTLE_INTERVAL
         )
+
+        self._unavailable_registers: set[int] = set()
 
         # Connection state tracking (initialize before reading device model)
         self._connection_failed = False
@@ -238,9 +245,21 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         """
         return self._user_selections.get(entity_key)
 
+    def clear_user_selection(self, entity_key: str) -> None:
+        """Clear user's selection after successful write.
+
+        Called after Modbus write succeeds so device value takes over UI display.
+        """
+        self._user_selections.pop(entity_key, None)
+        self.logger.debug("User selection cleared for %s", entity_key)
+
     def _override_model_with_product_name(self, data: dict[str, Any]) -> None:
         """Override model sensor value with user-friendly product name.
 
+        This method extracts product code from SN and replaces the raw PN
+        (e.g., "AE103") with friendly name (e.g., "Solarbank 4 E5000 Pro").
+
+        Called BEFORE async_set_updated_data to ensure sensor displays friendly names.
 
         Args:
             data: Data dictionary to modify in-place
@@ -325,6 +344,176 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                 "Failed to override model with product name: %s", e, exc_info=True
             )
 
+    def _persist_initial_mode_sent(self) -> None:
+        """Write initial_mode_sent=True to entry.options (idempotent).
+
+        entry.options is used instead of entry.data: options changes do not
+        trigger an entry reload, so entities stay available with no flicker.
+        To reset (re-trigger auto-set), remove and re-add the integration.
+        """
+        if self._initial_mode_sent:
+            return
+        self._initial_mode_sent = True
+        self.hass.config_entries.async_update_entry(
+            self.entry,
+            options={**self.entry.options, "initial_mode_sent": True},
+        )
+        self.logger.info(
+            "initial_mode_sent persisted — auto mode-set will not repeat on future HA restarts"
+        )
+
+    @staticmethod
+    def _normalize_version(version_str: str) -> str:
+        """Strip leading 'v' or 'V' prefix from version string.
+
+        Device hardware_version register stores strings like 'v0.0.5.5';
+        this normalizes to '0.0.5.5' before numeric comparison.
+        """
+        return version_str.strip().lstrip("vV")
+
+    @staticmethod
+    def _compare_version(version_str: str, threshold_str: str) -> int:
+        """Compare two version strings in X.X.X.X format.
+
+        Each segment is compared as an integer so that
+        0.0.5.5 > 0.0.5.4, 0.0.5.5 > 0.0.4.50, 0.0.5.5 < 0.0.6.1.
+        Input strings must NOT contain a leading 'v' prefix.
+
+        Returns:
+            -1  if version_str <  threshold_str
+             0  if version_str == threshold_str
+             1  if version_str >  threshold_str
+        """
+        def _to_tuple(v: str) -> tuple[int, ...]:
+            try:
+                return tuple(int(x) for x in v.split("."))
+            except (ValueError, AttributeError):
+                return (0,)
+
+        v = _to_tuple(version_str)
+        t = _to_tuple(threshold_str)
+        max_len = max(len(v), len(t))
+        v = v + (0,) * (max_len - len(v))
+        t = t + (0,) * (max_len - len(t))
+        if v < t:
+            return -1
+        if v > t:
+            return 1
+        return 0
+
+    def _inject_version_gates(self, data: dict[str, Any]) -> None:
+        """Inject version gate visibility fields for all entities with version_gate config.
+
+        Supports both single gate (dict) and multiple gates (list) formats:
+        - dict: version_gate: {entity: "hardware_version", min_version: "0.0.0.1"}
+        - list: version_gate: [{entity: "hardware_version", min_version: "0.0.0.1"},
+                                {entity: "firmware_version", min_version: "0.0.7.0"}]
+
+        For multiple gates, ALL must pass (AND logic) for the entity to be visible.
+        Injects {entity_key}_visible = 1 only when every gate passes, else 0.
+        """
+        try:
+            if not self._device_config_cache or not isinstance(data, dict):
+                return
+
+            for entity_key, config in self._device_config_cache.items():
+                version_gate = config.get("version_gate")
+                if not version_gate:
+                    continue
+
+                if isinstance(version_gate, dict):
+                    gates = [version_gate]
+                elif isinstance(version_gate, list):
+                    gates = version_gate
+                else:
+                    continue
+
+                visible_key = f"{entity_key}_visible"
+                all_visible = True
+
+                for gate in gates:
+                    gate_entity = gate.get("entity")
+                    min_version = gate.get("min_version")
+                    if not gate_entity or not min_version:
+                        all_visible = False
+                        break
+
+                    version_raw = data.get(gate_entity, "")
+                    if not isinstance(version_raw, str) or not version_raw.strip():
+                        self.logger.debug(
+                            "%s empty, %s gate failed", gate_entity, entity_key
+                        )
+                        all_visible = False
+                        break
+
+                    version = self._normalize_version(version_raw)
+                    threshold = self._normalize_version(str(min_version))
+                    result = self._compare_version(version, threshold)
+                    if result < 0:
+                        all_visible = False
+                        self.logger.debug(
+                            "%s=%s < threshold=%s, %s gate failed",
+                            gate_entity, version, threshold, entity_key,
+                        )
+                        break
+
+                    self.logger.debug(
+                        "%s=%s (raw=%s) >= threshold=%s, gate passed",
+                        gate_entity, version, version_raw.strip(), threshold,
+                    )
+
+                data[visible_key] = 1 if all_visible else 0
+                self.logger.debug(
+                    "%s=%d (evaluated %d gate(s))",
+                    visible_key, data[visible_key], len(gates),
+                )
+        except Exception as e:
+            self.logger.error(
+                "Failed to inject version gates: %s", e, exc_info=True
+            )
+
+    def is_register_available(self, address: int) -> bool:
+        """Check if a register is available (not in unavailable set)."""
+        return address not in self._unavailable_registers
+
+    def get_data_point_address(self, entity_key: str) -> int | None:
+        """Get the Modbus address for a data point by entity key."""
+        if not self._device_config_cache:
+            return None
+        config = self._device_config_cache.get(entity_key)
+        if not config:
+            return None
+        return config.get("address")
+
+    async def _update_unavailable_registers(self) -> None:
+        try:
+            client = await self.modbus_manager.get_client()
+            if not client or not hasattr(client, 'get_last_failed_registers'):
+                return
+            
+            failed = client.get_last_failed_registers()
+            successful = client.get_last_successful_registers()
+            
+            new_failures = failed - self._unavailable_registers
+            if new_failures:
+                self._unavailable_registers.update(new_failures)
+                self.logger.info(
+                    "Marked %d registers as unavailable: %s",
+                    len(new_failures),
+                    sorted(new_failures),
+                )
+            
+            recovered = successful & self._unavailable_registers
+            if recovered:
+                self._unavailable_registers -= recovered
+                self.logger.info(
+                    "Recovered %d registers, now available: %s",
+                    len(recovered),
+                    sorted(recovered),
+                )
+        except Exception as e:
+            self.logger.debug("Failed to update unavailable registers: %s", e)
+
     async def _auto_set_mode_on_connect(self, data: dict[str, Any]) -> None:
         """Auto-set operating mode on first connect if configured in YAML.
 
@@ -353,12 +542,13 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
             address = int(mode_config.get("address"))
             data_type = mode_config.get("data_type", "UINT16")
 
-            # Check current mode — skip if already in target mode
+            # Check current mode — skip write if already in target mode
             current_mode = data.get("operating_mode")
             if current_mode is not None and int(current_mode) == auto_mode:
                 self.logger.info(
-                    "Device already in target mode %d, skip auto-set", auto_mode
+                    "Device already in target mode %d, skip write", auto_mode
                 )
+                self._persist_initial_mode_sent()
                 return
 
             # Write target mode to device
@@ -385,8 +575,12 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                 self.set_write_protection("operating_mode", translation_key, protection)
 
                 self.logger.info("Auto-set operating mode to %d succeeded", auto_mode)
+                self._persist_initial_mode_sent()
             else:
-                self.logger.warning("Auto-set operating mode to %d FAILED", auto_mode)
+                self.logger.warning(
+                    "Auto-set operating mode to %d FAILED — will retry on next HA restart",
+                    auto_mode,
+                )
 
         except Exception as e:
             self.logger.error("Error in auto-set mode on connect: %s", e)
@@ -638,6 +832,7 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                             batch_ranges=self._batch_ranges_cache,
                             use_batch_optimization=True,
                         )
+                    await self._update_unavailable_registers()
                     if not data:
                         # Treat as failure
                         self.logger.warning(
@@ -656,9 +851,12 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                     # IMPORTANT: Override model sensor value BEFORE publishing data
                     # This ensures sensor entities also display friendly product names
                     self._override_model_with_product_name(data)
+                    self._inject_version_gates(data)
 
-                    # Auto-set operating mode on first connect (if configured)
-                    if not self._ever_connected:
+                    # Auto-set operating mode only on the very first ever connect.
+                    # _initial_mode_sent is persisted to entry.options, so HA restarts
+                    # and reconnections do NOT trigger this again.
+                    if not self._initial_mode_sent:
                         await self._auto_set_mode_on_connect(data)
 
                     # Log data comparison for debugging
@@ -668,6 +866,7 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
 
                     # Publish data to Home Assistant (data already has overridden model name)
                     self.async_set_updated_data(data)
+
                     self.logger.debug(
                         "[bg] Data published to Home Assistant via async_set_updated_data"
                     )
@@ -774,10 +973,12 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                                 batch_ranges=self._batch_ranges_cache,
                                 use_batch_optimization=True,
                             )
+                        await self._update_unavailable_registers()
                         if data:
                             # Override model sensor value with product name (MUST do before publishing)
                             self._override_model_with_product_name(data)
-
+                            self._inject_version_gates(data)
+        
                             # Log data comparison for periodic reads
                             old_data = (
                                 self._latest_data.copy() if self._latest_data else None
@@ -840,6 +1041,20 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
             and self._device_config_cache is not None
             and self._batch_ranges_cache is not None
         )
+
+    async def async_wait_for_first_data(self, timeout: float = 15.0) -> None:
+        if self._latest_data:
+            return
+        deadline = asyncio.get_running_loop().time() + timeout
+        while not self._latest_data:
+            remaining = deadline - asyncio.get_running_loop().time()
+            if remaining <= 0:
+                self.logger.debug(
+                    "async_wait_for_first_data timed out after %.1fs, proceeding without data",
+                    timeout,
+                )
+                return
+            await asyncio.sleep(min(0.1, remaining))
 
     async def ensure_config_ready(self) -> dict[str, Any]:
         """Ensure device configuration is loaded synchronously for platform setup.

@@ -1,0 +1,33 @@
+"""Diagnostics support for Anker Solix Official integration."""
+
+from __future__ import annotations
+
+from typing import Any
+
+from homeassistant.components.diagnostics import async_redact_data
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+
+from .const import DOMAIN
+
+TO_REDACT = {"ip_address", "device_sn", "device_name"}
+
+
+async def async_get_config_entry_diagnostics(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> dict[str, Any]:
+    coordinator = hass.data[DOMAIN][entry.entry_id]
+    return {
+        "config_entry": async_redact_data(entry.as_dict(), TO_REDACT),
+        "connection": {
+            "status": coordinator._status,
+            "consecutive_failures": coordinator._consecutive_failures,
+            "ever_connected": coordinator._ever_connected,
+            "initial_mode_sent": coordinator._initial_mode_sent,
+        },
+        "device": {
+            "model": coordinator.device_info.get("model"),
+            "firmware": (coordinator.data or {}).get("device_sw_version"),
+        },
+        "register_data": async_redact_data(coordinator.data or {}, TO_REDACT),
+    }

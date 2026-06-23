@@ -33,7 +33,28 @@
       "message": "Die verfügbare Ladeleistung des Geräts beträgt nur {power} W (Mindestanforderung: 100 W), daher kann die Ladeleistung nicht eingestellt werden. Bitte überprüfen Sie das Gerät."
     },
     "discharge_power_too_low": {
-      "message": "Die verfügbare Entladeleistung des Geräts beträgt nur {power} W (Mindestanforderung: 100 W), daher kann die Entladeleistung nicht eingestellt werden. Bitte überprüfen Sie das Gerät."
+      "message": "Die verfügbare Entladeleistung des Geräts beträgt nur {power}W (Mindestanforderung: 100W), die Entladeleistung kann nicht eingestellt werden, bitte überprüfen Sie das Gerät."
+    },
+    "soc_must_be_greater_than": {
+      "message": "Der {entity}-Wert von {value}% muss größer als {target} ({target_value}%) sein. Bitte passen Sie die Einstellungen an."
+    },
+    "soc_must_be_greater_than_or_equal": {
+      "message": "Der {entity}-Wert von {value}% muss größer oder gleich {target} ({target_value}%) sein. Bitte passen Sie die Einstellungen an."
+    },
+    "soc_must_be_less_than": {
+      "message": "Der {entity}-Wert von {value}% muss kleiner als {target} ({target_value}%) sein. Bitte passen Sie die Einstellungen an."
+    },
+    "soc_must_be_less_than_or_equal": {
+      "message": "Der {entity}-Wert von {value}% muss kleiner oder gleich {target} ({target_value}%) sein. Bitte passen Sie die Einstellungen an."
+    },
+    "write_condition_not_met": {
+      "message": "Dieser Wert kann nicht festgelegt werden, da die erforderliche Bedingung nicht erfüllt ist. Bitte überprüfen Sie den Gerätestatus."
+    },
+    "enable_backup_soc_first": {
+      "message": "Diese Funktion erfordert das Aktivieren des Backup-Reserve-Schalters in den Einstellungen der Anker-App."
+    },
+    "power_range_1_to_99_not_allowed": {
+      "message": "Die Leistung kann nicht im Bereich von {forbidden_min}-{forbidden_max}W eingestellt werden. Bitte stellen Sie 0W oder {allowed_min}-{allowed_max}W ein."
     }
   },
   "entity": {
@@ -108,10 +129,17 @@
       "battery_status": {
         "name": "Gerätestatus",
         "state": {
-          "standby": "Leerlauf",
+          "standby": "Standby",
           "charging": "Laden",
           "discharging": "Entladen",
-          "sleep": "Ruhemodus"
+          "sleep": "Schlafmodus"
+        }
+      },
+      "backup_soc_enable": {
+        "name": "Backup-SOC aktivieren",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
         }
       },
       "meter_model": {
@@ -221,10 +249,25 @@
         }
       },
       "battery_power_direction": {
-        "name": "Lade-/Entladesteuerung",
+        "name": "Leistungsfluss",
         "state": {
-          "charge": "Laden",
-          "discharge": "Entladen"
+          "charge": "Netzbezug",
+          "discharge": "Netzeinspeisung"
+        }
+      },
+      "export_power_control": {
+        "name": "Exportleistungssteuerungsmethode",
+        "state": {
+          "disabled": "Deaktiviert",
+          "percentage_control": "Prozentuale Steuerung",
+          "fixed_value_control": "Festwertsteuerung"
+        }
+      },
+      "power_on_off_control": {
+        "name": "Ein-/Ausschaltsteuerung",
+        "state": {
+          "power_on": "Einschalten",
+          "power_off": "Ausschalten"
         }
       }
     },
@@ -233,10 +276,25 @@
         "name": "Batterie-Lade-/Entlade-Sollwert"
       },
       "battery_power_setpoint": {
-        "name": "Vorgegebene Lade-/Entladeleistung"
+        "name": "Netzleistung"
+      },
+      "charging_limit_soc": {
+        "name": "Ladeobergrenze"
+      },
+      "discharge_limit_soc": {
+        "name": "Entladegrenze"
+      },
+      "backup_reserve_soc": {
+        "name": "Notstromreserve"
+      },
+      "ac_active_power_percent": {
+        "name": "Wirkleistungsanpassung in Prozent"
       }
     },
     "switch": {
+      "power_on_off_control": {
+        "name": "Ausgangsschalter"
+      },
       "power_switch": {
         "name": "Steckdosenschalter"
       }

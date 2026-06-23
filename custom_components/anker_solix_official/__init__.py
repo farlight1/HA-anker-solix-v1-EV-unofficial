@@ -23,8 +23,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN] = {}
     hass.data[DOMAIN][entry.entry_id] = coordinator
 
-    # Schedule a refresh immediately but don't block; background loop will handle connection and data push
     coordinator.async_set_updated_data({})
+
+    await coordinator.async_wait_for_first_data()
 
     # Set up platforms
     await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "select", "number", "switch"])
