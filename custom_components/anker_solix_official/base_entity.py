@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any, Callable, Coroutine, TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+
+from .const import DOMAIN, WRITE_CONDITION_REVERT_DELAY
 
 if TYPE_CHECKING:
     from .coordinator import AnkerSolixOfficialCoordinator
@@ -33,8 +37,11 @@ class AnkerSolixBaseEntity(CoordinatorEntity):
             entity_config: Entity configuration dict
         """
         super().__init__(coordinator)
+        
         self._entity_key = entity_key
+        
         self._config = entity_config
+        self._register_address = entity_config.get("address")
 
         # Set common attributes
         self._attr_has_entity_name = True
@@ -49,7 +56,14 @@ class AnkerSolixBaseEntity(CoordinatorEntity):
     @property
     def available(self) -> bool:
         """Return if entity is available."""
-        return self.coordinator.is_connected()
+        if not self.coordinator.is_connected():
+            return False
+        
+        if self._register_address is not None:
+            if not self.coordinator.is_register_available(self._register_address):
+                return False
+        
+        return True
 
     def _get_raw_value(self, default: Any = None) -> Any:
         """Get raw value from coordinator data.
@@ -78,6 +92,153 @@ class AnkerSolixBaseEntity(CoordinatorEntity):
         if not self.coordinator.data:
             return default
         return self.coordinator.data.get(self._entity_key, default)
+
+    def _check_write_condition(self) -> tuple[bool, str | None]:
+        """Check write_condition before writing.
+
+        Returns:
+            (passed, hint_translation_key)
+        """
+        condition = self._config.get("write_condition")
+        if not condition:
+            return True, None
+
+        if not self.coordinator.data:
+            _LOGGER.warning(
+                "Write condition check failed for %s: coordinator.data is None",
+                self._entity_key,
+            )
+            return False, condition.get("hint")
+
+        entity_key = condition.get("entity")
+        if not entity_key:
+            return True, None
+
+        current_value = self.coordinator.data.get(entity_key)
+        if current_value is None:
+            _LOGGER.warning(
+                "Write condition check failed for %s: entity '%s' not found in coordinator.data (available keys: %s)",
+                self._entity_key,
+                entity_key,
+                list(self.coordinator.data.keys())[:10],
+            )
+            return False, condition.get("hint")
+
+        try:
+            current_value = float(current_value)
+        except (ValueError, TypeError):
+            _LOGGER.warning(
+                "Write condition check failed for %s: cannot convert '%s' to float",
+                self._entity_key,
+                current_value,
+            )
+            return False, condition.get("hint")
+
+        operator = condition.get("operator", "eq")
+        target = condition.get("value")
+
+        passed = self._evaluate_operator(current_value, operator, target)
+        _LOGGER.debug(
+            "Write condition check for %s: %s %s %s = %s (current_value=%s)",
+            self._entity_key,
+            current_value,
+            operator,
+            target,
+            passed,
+            current_value,
+        )
+        return passed, condition.get("hint") if not passed else None
+
+    @staticmethod
+    def _evaluate_operator(value: float, operator: str, target: Any) -> bool:
+        """Evaluate a comparison operator with float tolerance."""
+        # Defensive check: if target is None, treat as pass (no condition to check)
+        if target is None:
+            return True
+        
+        # For list-based operators, ensure target is iterable
+        if operator in ("in", "not_in"):
+            if not isinstance(target, (list, tuple, set)):
+                target = [target]
+            return (
+                any(abs(value - float(t)) < 0.5 for t in target)
+                if operator == "in"
+                else not any(abs(value - float(t)) < 0.5 for t in target)
+            )
+        
+        # For numeric comparisons, ensure target is numeric
+        if not isinstance(target, (int, float)):
+            try:
+                target = float(target)
+            except (ValueError, TypeError):
+                return True
+        
+        if operator == "eq":
+            if isinstance(target, int) or (isinstance(target, float) and target == int(target)):
+                return abs(value - target) < 0.5
+            return abs(value - target) < 1e-6
+        elif operator == "ne":
+            if isinstance(target, int) or (isinstance(target, float) and target == int(target)):
+                return abs(value - target) >= 0.5
+            return abs(value - target) >= 1e-6
+        elif operator == "gt":
+            return value > target
+        elif operator == "gte":
+            return value >= target
+        elif operator == "lt":
+            return value < target
+        elif operator == "lte":
+            return value <= target
+        
+        return True
+
+    async def _revert_ui_state(self, user_value: Any) -> None:
+        """Revert UI state to device value after validation failure.
+
+        Forces a state change event so the frontend receives the revert update,
+        then clears the user_selection after a delay to show the device value.
+
+        Args:
+            user_value: The user's attempted value (used to force state change).
+        """
+        self.coordinator.set_user_selection(self._entity_key, user_value)
+        self.async_write_ha_state()
+
+        async def _revert_state():
+            await asyncio.sleep(WRITE_CONDITION_REVERT_DELAY)
+            if self.hass and self.entity_id in self.hass.states.async_entity_ids():
+                self.coordinator.clear_user_selection(self._entity_key)
+                self.async_write_ha_state()
+
+        self.hass.async_create_task(_revert_state())
+
+    async def _raise_write_condition_error(
+        self, hint_key: str | None, user_value: Any = None, persist_user_value: bool = False
+    ) -> None:
+        """Handle write_condition failure: persist UI state and raise error.
+
+        This ensures the frontend correctly reverts to the device value instead
+        of keeping an optimistic update after a failed write.
+
+        Args:
+            hint_key: Translation key for the error message.
+            user_value: If provided, save to user_selections to force state change.
+            persist_user_value: If True, keep user_selection (for select/switch).
+                               If False, clear it after forcing state change (for number).
+        """
+        if user_value is not None:
+            if persist_user_value:
+                # select/switch: keep user_selection, just update UI
+                self.coordinator.set_user_selection(self._entity_key, user_value)
+                self.async_write_ha_state()
+            else:
+                # number: use revert mechanism to show device value
+                await self._revert_ui_state(user_value)
+
+        raise ServiceValidationError(
+            translation_domain=DOMAIN,
+            translation_key=hint_key or "write_condition_not_met",
+        )
 
 
 async def async_setup_entities_with_retry(

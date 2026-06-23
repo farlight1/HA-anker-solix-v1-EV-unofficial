@@ -188,6 +188,10 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
         if not self.coordinator.is_connected():
             return False
 
+        if self._register_address is not None:
+            if not self.coordinator.is_register_available(self._register_address):
+                return False
+
         # Check visibility condition
         visibility_entity = self._config.get("visibility_entity")
         if visibility_entity:
@@ -238,18 +242,22 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
         if not self.available:
             return None
 
+        # Check write_condition: if not met, show "unknown" to indicate feature is disabled
+        condition_passed, _ = self._check_write_condition()
+        if not condition_passed:
+            return None
+
+        # Check user_selections first (for write_condition blocked values)
+        user_value = self.coordinator.get_user_selection(self._entity_key)
+        if user_value is not None:
+            gain = self._config.get("gain", 1)
+            if gain == 1:
+                return int(user_value)
+            return float(user_value)
+
         # Never-read mode: NEVER read from device, only show user's input
         never_read = self._config.get("never_read_device", False)
         if never_read:
-            user_value = self.coordinator.get_user_selection(self._entity_key)
-            _LOGGER.debug(
-                "[never_read_device] %s: user_selection=%s, config=%s",
-                self._entity_key,
-                user_value,
-                never_read,
-            )
-            if user_value is not None:
-                return user_value
             # User hasn't set a value yet, return default
             default_value = self._config.get("default_value", 0)
             gain = self._config.get("gain", 1)
@@ -339,8 +347,161 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
         except (ValueError, TypeError):
             return None
 
+    def _get_soc_entity_value(self, entity_key: str) -> float | None:
+        """Get current value of a SOC entity for validation.
+        
+        Checks user selection first (for recently set values),
+        then falls back to coordinator data (for device-read values).
+        """
+        user_value = self.coordinator.get_user_selection(entity_key)
+        if user_value is not None:
+            return float(user_value)
+        
+        if self.coordinator.data and entity_key in self.coordinator.data:
+            try:
+                return float(self.coordinator.data[entity_key])
+            except (ValueError, TypeError):
+                pass
+        
+        return None
+
+    def _validate_soc_constraints(self, value: float, validation_config: dict) -> None:
+        # Check condition_entity first
+        condition_entity = validation_config.get("condition_entity")
+        if condition_entity:
+            condition_value = validation_config.get("condition_value")
+            if self.coordinator.data:
+                current_value = self.coordinator.data.get(condition_entity)
+                if current_value is not None:
+                    try:
+                        if int(current_value) != int(condition_value):
+                            # Condition not met, skip validation
+                            return
+                    except (ValueError, TypeError):
+                        # Cannot convert to int, skip validation
+                        return
+                else:
+                    # condition_entity not found in data, skip validation
+                    return
+            else:
+                # No coordinator data, skip validation
+                return
+
+        if "greater_than" in validation_config:
+            targets = validation_config["greater_than"]
+            if isinstance(targets, str):
+                targets = [targets]
+            for target_key in targets:
+                target_value = self._get_soc_entity_value(target_key)
+                if target_value is not None and value <= target_value:
+                    raise ServiceValidationError(
+                        translation_domain=DOMAIN,
+                        translation_key="soc_must_be_greater_than",
+                        translation_placeholders={
+                            "entity": self._entity_key,
+                            "value": str(int(value)),
+                            "target": target_key,
+                            "target_value": str(int(target_value)),
+                        },
+                    )
+
+        if "greater_than_or_equal" in validation_config:
+            target_key = validation_config["greater_than_or_equal"]
+            target_value = self._get_soc_entity_value(target_key)
+            if target_value is not None and value < target_value:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="soc_must_be_greater_than_or_equal",
+                    translation_placeholders={
+                        "entity": self._entity_key,
+                        "value": str(int(value)),
+                        "target": target_key,
+                        "target_value": str(int(target_value)),
+                    },
+                )
+
+        if "less_than" in validation_config:
+            target_key = validation_config["less_than"]
+            target_value = self._get_soc_entity_value(target_key)
+            if target_value is not None and value >= target_value:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="soc_must_be_less_than",
+                    translation_placeholders={
+                        "entity": self._entity_key,
+                        "value": str(int(value)),
+                        "target": target_key,
+                        "target_value": str(int(target_value)),
+                    },
+                )
+
+        if "less_than_or_equal" in validation_config:
+            target_key = validation_config["less_than_or_equal"]
+            target_value = self._get_soc_entity_value(target_key)
+            if target_value is not None and value > target_value:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="soc_must_be_less_than_or_equal",
+                    translation_placeholders={
+                        "entity": self._entity_key,
+                        "value": str(int(value)),
+                        "target": target_key,
+                        "target_value": str(int(target_value)),
+                    },
+                )
+
+    def _validate_value_constraints(self, value: float) -> None:
+        """通用值约束验证引擎
+
+        从 YAML 配置中读取 value_constraints.rules，逐条检查。
+        当前支持的规则类型：
+          - forbidden_range: 禁止某个数值范围 [min, max]（含边界）
+
+        未来可扩展：must_be_multiple_of / forbidden_values / allowed_ranges / condition 等，
+        只需在此方法中增加对应的 _check_xxx 分支即可，无需修改业务代码。
+        """
+        constraints = self._config.get("value_constraints")
+        if not constraints:
+            return
+
+        rules = constraints.get("rules", [])
+        for rule in rules:
+            rule_type = rule.get("type")
+            error_key = rule.get("error_key", "value_constraint_failed")
+
+            if rule_type == "forbidden_range":
+                min_val = rule.get("min")
+                max_val = rule.get("max")
+                if min_val is not None and max_val is not None:
+                    if min_val <= value <= max_val:
+                        allowed_max = int(self.native_max_value)
+                        raise ServiceValidationError(
+                            translation_domain=DOMAIN,
+                            translation_key=error_key,
+                            translation_placeholders={
+                                "forbidden_min": str(int(min_val)),
+                                "forbidden_max": str(int(max_val)),
+                                "allowed_min": str(int(max_val) + 1),
+                                "allowed_max": str(allowed_max),
+                                "value": str(int(value)),
+                            },
+                        )
+            else:
+                _LOGGER.warning(
+                    "Unknown value_constraint rule type '%s' for entity %s, skipping",
+                    rule_type,
+                    self._entity_key,
+                )
+
     async def async_set_native_value(self, value: float) -> None:
         """Set value."""
+        # Check write_condition first (before any other validation)
+        condition_passed, hint_key = self._check_write_condition()
+        if not condition_passed:
+            await self._raise_write_condition_error(hint_key, user_value=value)
+
+        self._validate_value_constraints(value)
+
         address = self._config.get("address")
         if address is None:
             _LOGGER.error("Number %s has no address configured", self._entity_key)
@@ -413,6 +574,16 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
                             translation_key="discharge_power_too_low",
                             translation_placeholders={"power": str(device_max)},
                         )
+
+        soc_validation = self._config.get("soc_validation")
+        if soc_validation:
+            try:
+                self._validate_soc_constraints(value, soc_validation)
+            except ServiceValidationError as err:
+                # SOC validation failed, use same UI revert mechanism as write_condition
+                await self._revert_ui_state(value)
+                raise
+
         write_value = value
         gain = self._config.get("gain", 1)
         if gain != 1:
@@ -519,6 +690,8 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
                     # Enable write protection to prevent UI from overwriting user input
                     # Device may take several seconds to process the command
                     self.coordinator.set_write_protection(self._entity_key, value, 10.0)
+                    # Clear user_selection so device value takes over after write protection expires
+                    self.coordinator.clear_user_selection(self._entity_key)
 
                 # Handle mutual exclusion: set linked entity to 0
                 linked_entity = self._config.get("linked_entity")
@@ -606,11 +779,12 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator.
 
-        Control-type Number entities do NOT auto-refresh to prevent
-        overwriting user input. Value only updates on:
-        1. Initial load (first time)
-        2. User manually sets a value (via async_set_native_value)
-        3. Mutual exclusion update (via dispatcher signal)
+        Control-type Number entities update logic:
+        1. Initial load (first time): update value
+        2. User manually sets a value: update value + write protection (10s)
+        3. Write protection active: keep user's value (prevent UI flicker)
+        4. Write protection expired: update from device (allow APP changes to sync)
+        5. Mutual exclusion update (via dispatcher signal): update value
 
         Note: We always call async_write_ha_state() to update availability
         status even when value is frozen (e.g., visibility_entity changed).
@@ -628,11 +802,18 @@ class ModbusLocalDeviceNumber(AnkerSolixBaseEntity, NumberEntity):
                 self.async_write_ha_state()
             return
 
-        # For normal mode: only update on first load
-        if self._last_known_value is None:
-            self._last_known_value = self.native_value
-        # Always update state for availability check
-        self.async_write_ha_state()
+        is_protected, protected_value = self.coordinator.get_protected_value(
+            self._entity_key
+        )
+        
+        if is_protected:
+            # Write protection active: keep user's value, just update availability
+            self.async_write_ha_state()
+        else:
+            # Write protection expired or never set: clear cached value and read from device
+            # This allows APP changes to sync after write protection expires
+            self._last_known_value = None
+            self.async_write_ha_state()
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

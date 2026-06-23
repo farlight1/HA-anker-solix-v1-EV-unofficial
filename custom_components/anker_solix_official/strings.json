@@ -213,10 +213,10 @@
         }
       },
       "battery_power_direction": {
-        "name": "Discharge Control",
+        "name": "Grid Flow",
         "state": {
-          "charge": "Charge",
-          "discharge": "Discharge"
+          "charge": "Grid Import",
+          "discharge": "Grid Export"
         }
       },
       "export_power_control": {
@@ -240,7 +240,7 @@
         "name": "Battery Charge/Discharge Setpoint"
       },
       "battery_power_setpoint": {
-        "name": "Specified Charge/Discharge Power"
+        "name": "Target Grid Power"
       },
       "ac_active_power_percent": {
         "name": "Active Power Adjust Percentage"

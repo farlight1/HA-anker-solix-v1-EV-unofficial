@@ -130,6 +130,10 @@ class ModbusLocalDeviceSelect(AnkerSolixBaseEntity, SelectEntity):
         if not self.coordinator.is_connected():
             return False
 
+        if self._register_address is not None:
+            if not self.coordinator.is_register_available(self._register_address):
+                return False
+
         visibility_entity = self._config.get("visibility_entity")
         if visibility_entity:
             visibility_bit = self._config.get("visibility_bit")
@@ -219,6 +223,11 @@ class ModbusLocalDeviceSelect(AnkerSolixBaseEntity, SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Select option."""
+        # Check write_condition before any other processing
+        condition_passed, hint_key = self._check_write_condition()
+        if not condition_passed:
+            await self._raise_write_condition_error(hint_key, user_value=option, persist_user_value=True)
+
         # For direction selector: store selection and auto-rewrite power register
         if self._config.get("is_direction_selector"):
             # Store user's selection (persists until user changes it or HA restarts)

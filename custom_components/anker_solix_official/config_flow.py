@@ -10,7 +10,13 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 
-from .const import DOMAIN, ERROR_INVALID_IP, ERROR_CANNOT_CONNECT, ERROR_CONNECTION_TIMEOUT, ERROR_DEVICE_NOT_SUPPORTED
+from .const import (
+    DOMAIN,
+    ERROR_INVALID_IP,
+    ERROR_CANNOT_CONNECT,
+    ERROR_CONNECTION_TIMEOUT,
+    ERROR_DEVICE_NOT_SUPPORTED,
+)
 from .device_config import AnkerSolixDeviceConfig
 from .modbus_client import AnkerSolixModbusClient
 
@@ -25,12 +31,13 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def _validate_ipv4(self, ip_address: str) -> bool:
         """Validate IPv4 address using regex."""
         # IPv4 regex pattern: 0-255.0-255.0-255.0-255
-        ipv4_pattern = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+        ipv4_pattern = r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
         return bool(re.match(ipv4_pattern, ip_address.strip()))
 
     async def _test_modbus_connection(self, ip_address: str, port: int = 502) -> bool:
         """Test Modbus connection to the device."""
         import asyncio
+
         client = None
         try:
             client = AnkerSolixModbusClient(ip_address, port)
@@ -38,7 +45,9 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             loop = asyncio.get_event_loop()
             return await loop.run_in_executor(None, client.connect)
         except Exception as e:
-            _LOGGER.warning("Failed to test Modbus connection to %s:%d: %s", ip_address, port, e)
+            _LOGGER.warning(
+                "Failed to test Modbus connection to %s:%d: %s", ip_address, port, e
+            )
             return False
         finally:
             # Ensure client is properly closed
@@ -48,9 +57,9 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception as e:
                 _LOGGER.debug("Error disconnecting during connection test: %s", e)
 
-    async def _check_device_support(self, ip_address: str, port: int = 502) -> bool:
-        """Check if device is supported by reading PN and verifying config file exists."""
+    async def _check_device_support(self, ip_address: str, port: int = 502) -> tuple[bool, str]:
         import asyncio
+
         client = None
         try:
             client = AnkerSolixModbusClient(ip_address, port)
@@ -59,40 +68,117 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             loop = asyncio.get_event_loop()
             connected = await loop.run_in_executor(None, client.connect)
             if not connected:
-                _LOGGER.warning("Failed to connect to device at %s:%d for PN detection", ip_address, port)
-                return False
+                _LOGGER.warning(
+                    "Failed to connect to device at %s:%d for PN detection",
+                    ip_address,
+                    port,
+                )
+                return False, ""
 
             # Read device PN using unified method (returns tuple: pn_hash, raw_pn, raw_hex)
             result = await loop.run_in_executor(None, client.read_device_pn)
             pn_hash, raw_pn, raw_hex = result
             if not pn_hash:
-                _LOGGER.warning("Failed to read device PN from %s:%d - Raw: '%s', Registers: [%s]",
-                              ip_address, port, raw_pn, raw_hex)
-                return False
+                _LOGGER.warning(
+                    "Failed to read device PN from %s:%d - Raw: '%s', Registers: [%s]",
+                    ip_address,
+                    port,
+                    raw_pn,
+                    raw_hex,
+                )
+                return False, ""
 
-            _LOGGER.info("Device PN read at %s:%d - Raw PN: '%s', MD5: '%s', Registers: [%s]",
-                        ip_address, port, raw_pn, pn_hash, raw_hex)
+            _LOGGER.info(
+                "Device PN read at %s:%d - Raw PN: '%s', MD5: '%s', Registers: [%s]",
+                ip_address,
+                port,
+                raw_pn,
+                pn_hash,
+                raw_hex,
+            )
 
             # Check if configuration file exists (file I/O is quick, no need for executor)
             from pathlib import Path
+
             config_file = f"config/{pn_hash}.yaml"
             config_path = Path(__file__).resolve().parent / config_file
 
-            if config_path.exists():
-                _LOGGER.info("Device PN '%s' (Raw: '%s') detected at %s:%d, config file found",
-                            pn_hash, raw_pn, ip_address, port)
-                return True
-            else:
+            if not config_path.exists():
                 _LOGGER.warning(
                     "Device PN '%s' (Raw: '%s') detected at %s:%d, but config file not found at %s. "
                     "Raw registers: [%s]",
-                    pn_hash, raw_pn, ip_address, port, config_path, raw_hex
+                    pn_hash,
+                    raw_pn,
+                    ip_address,
+                    port,
+                    config_path,
+                    raw_hex,
                 )
-                return False
+                return False, ""
+
+            _LOGGER.info(
+                "Device PN '%s' (Raw: '%s') detected at %s:%d, config file found",
+                pn_hash,
+                raw_pn,
+                ip_address,
+                port,
+            )
+
+            sn = ""
+            try:
+                import yaml as _yaml
+
+                with open(config_path, encoding="utf-8") as f:
+                    device_cfg = _yaml.safe_load(f)
+                sn_key = device_cfg.get("product_info", {}).get("sn_register_key")
+                if sn_key:
+                    sn_cfg = device_cfg.get("read_quantities", {}).get(sn_key, {})
+                    sn_address = sn_cfg.get("address")
+                    sn_count = sn_cfg.get("count", 12)
+                    if sn_address:
+                        sn_result = await loop.run_in_executor(
+                            None,
+                            lambda: client.client.read_input_registers(
+                                address=sn_address, count=sn_count
+                            ),
+                        )
+                        if sn_result and not sn_result.isError():
+                            regs = getattr(sn_result, "registers", []) or []
+                            raw = b""
+                            for r in regs:
+                                raw += bytes([(r >> 8) & 0xFF, r & 0xFF])
+                            sn = raw.decode("utf-8", errors="ignore").rstrip("\x00").strip()
+                            _LOGGER.info(
+                                "Device SN read at %s:%d: '%s'",
+                                ip_address,
+                                port,
+                                sn[:6] + "***" if len(sn) > 6 else "***",
+                            )
+                        else:
+                            _LOGGER.warning(
+                                "Failed to read SN from %s:%d, will use IP as unique_id",
+                                ip_address,
+                                port,
+                            )
+            except Exception as e:
+                _LOGGER.warning(
+                    "Exception reading SN from %s:%d: %s, will use IP as unique_id",
+                    ip_address,
+                    port,
+                    e,
+                )
+                sn = ""
+
+            return True, sn
 
         except Exception as e:
-            _LOGGER.error("Exception while checking device support at %s:%d: %s", ip_address, port, e)
-            return False
+            _LOGGER.error(
+                "Exception while checking device support at %s:%d: %s",
+                ip_address,
+                port,
+                e,
+            )
+            return False, ""
         finally:
             # Ensure client is properly closed
             try:
@@ -101,75 +187,85 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception as e:
                 _LOGGER.debug("Error disconnecting during device check: %s", e)
 
-
     async def async_step_user(self, user_input=None) -> FlowResult:
         """Handle initial step."""
         errors = {}
 
         if user_input is not None:
             ip_address = user_input.get("ip_address", "").strip()
-            
+
             # Validate IP address format
             if not ip_address:
                 errors["base"] = ERROR_INVALID_IP
             elif not self._validate_ipv4(ip_address):
                 errors["base"] = ERROR_INVALID_IP
             else:
-                # Set unique ID to prevent duplicate entries
-                await self.async_set_unique_id(ip_address)
-                self._abort_if_unique_id_configured()
-                
                 # Test Modbus connection before creating entry
                 if not await self._test_modbus_connection(ip_address):
                     errors["base"] = ERROR_CANNOT_CONNECT
-                elif not await self._check_device_support(ip_address):
-                    errors["base"] = ERROR_DEVICE_NOT_SUPPORTED
                 else:
-                    # Create entry only if connection is successful and device is supported
-                    return self.async_create_entry(
-                        title=f"Anker Solix {ip_address}",
-                        data={
-                            "ip_address": ip_address,
-                            "port": 502,
-                            "device_name": f"Anker Solix Device {ip_address}"
-                        }
-                    )
+                    supported, sn = await self._check_device_support(ip_address)
+                    if not supported:
+                        errors["base"] = ERROR_DEVICE_NOT_SUPPORTED
+                    else:
+                        unique_id = sn if sn else ip_address
+                        await self.async_set_unique_id(unique_id)
+                        for entry in self._async_current_entries():
+                            if entry.unique_id == unique_id and not entry.disabled_by:
+                                return self.async_abort(reason="already_configured")
+                        self._abort_if_unique_id_configured(updates={"ip_address": ip_address})
+                        return self.async_create_entry(
+                            title=f"Anker Solix {ip_address}",
+                            data={
+                                "ip_address": ip_address,
+                                "port": 502,
+                                "device_name": f"Anker Solix Device {ip_address}",
+                            },
+                        )
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema({
-                vol.Required("ip_address"): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required("ip_address"): str,
+                }
+            ),
             errors=errors,
         )
-
 
     async def async_step_import(self, import_data=None) -> FlowResult:
         """Handle import from configuration.yaml."""
         ip_address = import_data.get("ip_address", "").strip()
-        
+
         # Validate IP address format
         if not ip_address or not self._validate_ipv4(ip_address):
             return self.async_abort(reason="invalid_ip")
-        
+
         # Test Modbus connection and device support before creating entry
         port = import_data.get("port", 502)
         if not await self._test_modbus_connection(ip_address, port):
             return self.async_abort(reason="cannot_connect")
-        if not await self._check_device_support(ip_address, port):
+
+        supported, sn = await self._check_device_support(ip_address, port)
+        if not supported:
             return self.async_abort(reason="device_not_supported")
-        
-        # Set unique ID to prevent duplicate entries
-        await self.async_set_unique_id(ip_address)
-        self._abort_if_unique_id_configured()
-        
+
+        unique_id = sn if sn else ip_address
+        await self.async_set_unique_id(unique_id)
+        for entry in self._async_current_entries():
+            if entry.unique_id == unique_id and not entry.disabled_by:
+                return self.async_abort(reason="already_configured")
+        self._abort_if_unique_id_configured(updates={"ip_address": ip_address})
+
         return self.async_create_entry(
             title=f"Anker Solix {ip_address}",
             data={
                 "ip_address": ip_address,
                 "port": port,
-                "device_name": import_data.get("device_name", f"Anker Solix Device {ip_address}")
-            }
+                "device_name": import_data.get(
+                    "device_name", f"Anker Solix Device {ip_address}"
+                ),
+            },
         )
 
     @staticmethod
@@ -201,7 +297,9 @@ class AnkerSolixOfficialOptionsFlowHandler(config_entries.OptionsFlow):
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema({
-                vol.Optional("device_name", default=default_name): str,
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Optional("device_name", default=default_name): str,
+                }
+            ),
         )

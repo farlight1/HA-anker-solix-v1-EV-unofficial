@@ -71,6 +71,24 @@ class AnkerSolixSwitch(AnkerSolixBaseEntity, SwitchEntity):
         self._read_entity_key = self._config.get("read_entity_key")
         self._write_address = self._config.get("address")
 
+    @property
+    def available(self) -> bool:
+        """Return if entity is available."""
+        if not self.coordinator.is_connected():
+            return False
+
+        if self._read_entity_key is not None:
+            read_address = self.coordinator.get_data_point_address(self._read_entity_key)
+            if read_address is not None:
+                if not self.coordinator.is_register_available(read_address):
+                    return False
+
+        if self._register_address is not None:
+            if not self.coordinator.is_register_available(self._register_address):
+                return False
+
+        return True
+
     def _get_option_value(self, option_key: str, default_value: int) -> int:
         """Get register value for option.
 
@@ -162,12 +180,13 @@ class AnkerSolixSwitch(AnkerSolixBaseEntity, SwitchEntity):
         await self._async_set_state(off_value, "off")
 
     async def _async_set_state(self, value: int, state_name: str) -> None:
-        """Set switch state.
+        """Set switch state."""
+        # Check write_condition before any other processing
+        condition_passed, hint_key = self._check_write_condition()
+        if not condition_passed:
+            option_key = _OPTION_ENABLED if value == _DEFAULT_ON_VALUE else _OPTION_DISABLED
+            await self._raise_write_condition_error(hint_key, user_value=option_key, persist_user_value=True)
 
-        Args:
-            value: Register value to write
-            state_name: State name ('on' or 'off') for logging
-        """
         address = self._write_address
         if address is None:
             _LOGGER.error("Switch %s has no address configured", self._entity_key)

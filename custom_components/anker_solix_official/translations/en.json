@@ -33,7 +33,28 @@
       "message": "The device's available charging power is only {power} W (minimum required: 100 W), so the charging power cannot be set. Please check the device."
     },
     "discharge_power_too_low": {
-      "message": "The device's available discharging power is only {power} W (minimum required: 100 W), so the discharging power cannot be set. Please check the device."
+      "message": "The device's available discharging power is only {power}W (minimum required: 100W), unable to set discharging power, please check the device."
+    },
+    "soc_must_be_greater_than": {
+      "message": "The {entity} value {value}% must be greater than {target} ({target_value}%). Please adjust the settings."
+    },
+    "soc_must_be_greater_than_or_equal": {
+      "message": "The {entity} value {value}% must be greater than or equal to {target} ({target_value}%). Please adjust the settings."
+    },
+    "soc_must_be_less_than": {
+      "message": "The {entity} value {value}% must be less than {target} ({target_value}%). Please adjust the settings."
+    },
+    "soc_must_be_less_than_or_equal": {
+      "message": "The {entity} value {value}% must be less than or equal to {target} ({target_value}%). Please adjust the settings."
+    },
+    "write_condition_not_met": {
+      "message": "Cannot set this value because the required condition is not met. Please check the device status."
+    },
+    "enable_backup_soc_first": {
+      "message": "This feature requires enabling the Backup Reserve switch in the Anker app under Settings."
+    },
+    "power_range_1_to_99_not_allowed": {
+      "message": "Power cannot be set in the {forbidden_min}-{forbidden_max}W range. Please set 0W or {allowed_min}-{allowed_max}W."
     }
   },
   "entity": {
@@ -112,6 +133,13 @@
           "charging": "Charging",
           "discharging": "Discharging",
           "sleep": "Sleep"
+        }
+      },
+      "backup_soc_enable": {
+        "name": "Backup SOC Enable",
+        "state": {
+          "disabled": "Disabled",
+          "enabled": "Enabled"
         }
       },
       "meter_model": {
@@ -221,10 +249,10 @@
         }
       },
       "battery_power_direction": {
-        "name": "Discharge Control",
+        "name": "Grid Flow",
         "state": {
-          "charge": "Charge",
-          "discharge": "Discharge"
+          "charge": "Grid Import",
+          "discharge": "Grid Export"
         }
       },
       "export_power_control": {
@@ -248,7 +276,16 @@
         "name": "Battery Charge/Discharge Setpoint"
       },
       "battery_power_setpoint": {
-        "name": "Specified Charge/Discharge Power"
+        "name": "Target Grid Power"
+      },
+      "charging_limit_soc": {
+        "name": "Charging Limit"
+      },
+      "discharge_limit_soc": {
+        "name": "Discharge Limit"
+      },
+      "backup_reserve_soc": {
+        "name": "Backup Reserve"
       },
       "ac_active_power_percent": {
         "name": "Active Power Adjust Percentage"

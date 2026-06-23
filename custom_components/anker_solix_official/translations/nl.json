@@ -33,7 +33,28 @@
       "message": "Het beschikbare laadvermogen van het apparaat is slechts {power} W (minimum vereist: 100 W), dus het laadvermogen kan niet worden ingesteld. Controleer het apparaat."
     },
     "discharge_power_too_low": {
-      "message": "Het beschikbare ontlaadvermogen van het apparaat is slechts {power} W (minimum vereist: 100 W), dus het ontlaadvermogen kan niet worden ingesteld. Controleer het apparaat."
+      "message": "De beschikbare ontlaadvermogen van het apparaat is slechts {power}W (minimaal vereist: 100W), kan ontlaadvermogen niet instellen, controleer het apparaat."
+    },
+    "soc_must_be_greater_than": {
+      "message": "De {entity}-waarde van {value}% moet groter zijn dan {target} ({target_value}%). Pas de instellingen aan."
+    },
+    "soc_must_be_greater_than_or_equal": {
+      "message": "De {entity}-waarde van {value}% moet groter dan of gelijk zijn aan {target} ({target_value}%). Pas de instellingen aan."
+    },
+    "soc_must_be_less_than": {
+      "message": "De {entity}-waarde van {value}% moet kleiner zijn dan {target} ({target_value}%). Pas de instellingen aan."
+    },
+    "soc_must_be_less_than_or_equal": {
+      "message": "De {entity}-waarde van {value}% moet kleiner dan of gelijk zijn aan {target} ({target_value}%). Pas de instellingen aan."
+    },
+    "write_condition_not_met": {
+      "message": "Kan deze waarde niet instellen omdat niet aan de vereiste voorwaarde is voldaan. Controleer de status van het apparaat."
+    },
+    "enable_backup_soc_first": {
+      "message": "Deze functie vereist het inschakelen van de back-upreserveschakelaar in de instellingen van de Anker-app."
+    },
+    "power_range_1_to_99_not_allowed": {
+      "message": "Vermogen kan niet worden ingesteld in het bereik van {forbidden_min}-{forbidden_max}W. Stel 0W of {allowed_min}-{allowed_max}W in."
     }
   },
   "entity": {
@@ -108,10 +129,17 @@
       "battery_status": {
         "name": "Apparaatstatus",
         "state": {
-          "standby": "Idle",
+          "standby": "Standby",
           "charging": "Opladen",
           "discharging": "Ontladen",
-          "sleep": "Slaapstand"
+          "sleep": "Slaapmodus"
+        }
+      },
+      "backup_soc_enable": {
+        "name": "Back-up SOC inschakelen",
+        "state": {
+          "disabled": "Uitgeschakeld",
+          "enabled": "Ingeschakeld"
         }
       },
       "meter_model": {
@@ -221,10 +249,25 @@
         }
       },
       "battery_power_direction": {
-        "name": "Laad-/ontlaadregeling",
+        "name": "Netvermogen",
         "state": {
-          "charge": "Opladen",
-          "discharge": "Ontladen"
+          "charge": "Netimport",
+          "discharge": "Teruglevering"
+        }
+      },
+      "export_power_control": {
+        "name": "Exportvermogen regelingsmethode",
+        "state": {
+          "disabled": "Uitgeschakeld",
+          "percentage_control": "Procentuele regeling",
+          "fixed_value_control": "Vaste-waarderegeling"
+        }
+      },
+      "power_on_off_control": {
+        "name": "In-/Uitschakelregeling",
+        "state": {
+          "power_on": "Inschakelen",
+          "power_off": "Uitschakelen"
         }
       }
     },
@@ -233,10 +276,25 @@
         "name": "Batterij laad-/ontlaadinstelpunt"
       },
       "battery_power_setpoint": {
-        "name": "Ingestelde laad-/ontlaadvermogen"
+        "name": "Netvermogen"
+      },
+      "charging_limit_soc": {
+        "name": "Maximale laadlimiet"
+      },
+      "discharge_limit_soc": {
+        "name": "Ontladingslimiet"
+      },
+      "backup_reserve_soc": {
+        "name": "Back-upreserve"
+      },
+      "ac_active_power_percent": {
+        "name": "Percentage actieve vermogensaanpassing"
       }
     },
     "switch": {
+      "power_on_off_control": {
+        "name": "Uitgangsschakelaar"
+      },
       "power_switch": {
         "name": "Stopcontactschakelaar"
       }

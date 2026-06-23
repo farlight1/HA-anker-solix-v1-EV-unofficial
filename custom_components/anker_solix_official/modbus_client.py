@@ -79,6 +79,18 @@ class AnkerSolixModbusClient:
 
         # Initialize batch reader for optimized register reading
         self._batch_reader = BatchRegisterReader()
+        
+        # Track registers that failed to read (for entity availability)
+        self._last_failed_registers: set[int] = set()
+        self._last_successful_registers: set[int] = set()
+
+    def get_last_failed_registers(self) -> set[int]:
+        """Get set of register addresses that failed in the last read operation."""
+        return self._last_failed_registers.copy()
+
+    def get_last_successful_registers(self) -> set[int]:
+        """Get set of register addresses that succeeded in the last read operation."""
+        return self._last_successful_registers.copy()
 
     def _create_client(self, host, port):
         """Create Modbus client.
@@ -247,9 +259,21 @@ class AnkerSolixModbusClient:
             self._logger.error("Register %d returned no data", address)
             return self._default_value(data_type)
 
+        # Defensive check: ensure no None values in registers list
+        if any(r is None for r in registers):
+            self._logger.warning(
+                "Register %d contains None values: %s, returning default",
+                address,
+                registers,
+            )
+            return self._default_value(data_type)
+
         try:
             if data_type == "UINT16":
                 value = registers[0]
+            elif data_type == "INT16":
+                raw = registers[0] & 0xFFFF
+                value = raw if raw < 0x8000 else raw - 0x10000
             elif data_type == "INT32":
                 if len(registers) < 2:
                     self._logger.warning(
@@ -347,7 +371,7 @@ class AnkerSolixModbusClient:
         if count is None:
             count = (
                 1
-                if data_type == "UINT16"
+                if data_type in ("UINT16", "INT16")
                 else 2
                 if data_type in ("INT32", "UINT32", "VERSION")
                 else 10
@@ -775,6 +799,9 @@ class AnkerSolixModbusClient:
         successful_reads = 0
         failed_reads = 0
 
+        self._last_failed_registers.clear()
+        self._last_successful_registers.clear()
+
         range_data: dict[tuple[int, int], list[int]] = {}
         processed_keys = set()
 
@@ -809,13 +836,69 @@ class AnkerSolixModbusClient:
                     continue
 
                 if not result or result.isError():
-                    self._logger.error(
-                        "Failed to read configured range %d-%d (%s): %s",
+                    self._logger.warning(
+                        "Failed to read configured range %d-%d (%s): %s, trying individual reads",
                         start,
                         end,
                         reg_type,
                         result,
                     )
+                    # Fallback: try reading each register individually
+                    individual_reads = [None] * register_count
+                    successful_individual = 0
+                    
+                    for addr in range(start, end + 1):
+                        try:
+                            if reg_type == "holding":
+                                individual_result = self.client.read_holding_registers(
+                                    address=addr, count=1
+                                )
+                            else:
+                                individual_result = self.client.read_input_registers(
+                                    address=addr, count=1
+                                )
+                            
+                            if individual_result and not individual_result.isError():
+                                individual_registers = getattr(individual_result, "registers", None) or getattr(
+                                    individual_result, "data", None
+                                )
+                                if individual_registers:
+                                    offset = addr - start
+                                    individual_reads[offset] = individual_registers[0]
+                                    successful_individual += 1
+                                    self._last_successful_registers.add(addr)
+                                    self._logger.debug(
+                                        "Individual read successful: address=%d, value=%s",
+                                        addr,
+                                        individual_registers[0],
+                                    )
+                            else:
+                                # Individual read failed - mark as unavailable
+                                self._last_failed_registers.add(addr)
+                                self._logger.debug(
+                                    "Individual read failed for address %d: %s",
+                                    addr,
+                                    individual_result,
+                                )
+                        except Exception as individual_exc:
+                            # Individual read failed - mark as unavailable
+                            self._last_failed_registers.add(addr)
+                            self._logger.debug(
+                                "Individual read failed for address %d: %s",
+                                addr,
+                                individual_exc,
+                            )
+                    
+                    # Only add to range_data if we got at least one successful read
+                    if successful_individual > 0:
+                        range_data[(start, end)] = individual_reads
+                        self._logger.debug(
+                            "Fallback individual reads: %d/%d successful for range %d-%d",
+                            successful_individual,
+                            register_count,
+                            start,
+                            end,
+                        )
                     continue
 
                 registers = getattr(result, "registers", None) or getattr(
@@ -833,6 +916,8 @@ class AnkerSolixModbusClient:
                     continue
 
                 range_data[(start, end)] = registers
+                for addr in range(start, end + 1):
+                    self._last_successful_registers.add(addr)
 
         if use_batch_optimization and not batch_ranges:
             groups = self._batch_reader.group_data_points(data_points)
@@ -871,6 +956,8 @@ class AnkerSolixModbusClient:
                             config.get("data_type", "UINT16")
                         )
                         failed_reads += 1
+                        address = int(config["address"])
+                        self._last_failed_registers.add(address)
                     continue
 
                 registers = getattr(result, "registers", None) or getattr(
@@ -936,6 +1023,7 @@ class AnkerSolixModbusClient:
 
                         data[key] = value
                         successful_reads += 1
+                        self._last_successful_registers.add(address)
                     except Exception as exc:
                         self._handle_connection_error(
                             f"Exception decoding batch data point {key}: {exc}"
