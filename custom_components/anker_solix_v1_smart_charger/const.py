@@ -1,6 +1,6 @@
 """Constants definition."""
 
-DOMAIN = "anker_solix_official"
+DOMAIN = "anker_solix_v1_smart_ev_charger"
 
 # Timing constants (seconds)
 SCAN_INTERVAL = 5
