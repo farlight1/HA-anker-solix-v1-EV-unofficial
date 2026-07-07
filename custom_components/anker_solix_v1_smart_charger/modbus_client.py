@@ -397,9 +397,9 @@ class AnkerSolixModbusClient:
             return 0
 
     def read_device_pn(self) -> tuple[str, str, str]:
-        """Read device PN from register 0x8000 (32768) and return salted SHA-256 hash.
+        """Read device PN from register 20000 and return salted SHA-256 hash.
 
-        Reads 5 registers as STRING, strips spaces and null characters,
+        Reads 1 register as UINT16, converts it to string,
         then returns salted SHA-256 hash of the PN for privacy protection.
 
         Returns:
@@ -421,7 +421,8 @@ class AnkerSolixModbusClient:
                         )
                         continue
 
-                result = self.client.read_input_registers(address=0x8000, count=5)
+                # MODIFICACIÓN 1: Dirección 20000 y count=1 (es un UINT16 de 1 registro)
+                result = self.client.read_input_registers(address=20000, count=1)
                 if not result or result.isError():
                     self._logger.warning(
                         "Failed to read device PN registers: %s", result
@@ -435,43 +436,34 @@ class AnkerSolixModbusClient:
                     self._logger.warning("Device PN registers returned empty")
                     return ("", "", "")
 
-                # Raw register data (hex format)
-                raw_hex = " ".join([f"0x{r:04X}" for r in registers])
+                # MODIFICACIÓN 2: Ajustar el formateo Hex para 1 solo registro
+                raw_hex = f"0x{registers[0]:04X}"
 
-                # Decode as string (big endian)
-                string_bytes = []
-                for reg in registers:
-                    string_bytes.append((reg >> 8) & 0xFF)
-                    string_bytes.append(reg & 0xFF)
+                # MODIFICACIÓN 3: Al ser un entero numérico, lo convertimos directamente a String
+                device_pn = str(registers[0])
 
-                device_pn_raw = (
-                    bytes(string_bytes).decode("utf-8", errors="ignore").rstrip("\x00")
-                )
-
-                # Strip all spaces and null characters from the device PN
-                device_pn = device_pn_raw.replace(" ", "").replace("\x00", "").strip()
                 if not device_pn:
                     self._logger.warning(
-                        "Device PN is empty after cleaning, raw='%s'", device_pn_raw
+                        "Device PN is empty"
                     )
-                    return ("", device_pn_raw, raw_hex)
+                    return ("", "", raw_hex)
 
                 # Success - reset error counter
                 self._consecutive_errors = 0
-                # Return salted SHA-256 hash of the PN for privacy protection
-                # Salt prevents rainbow table attacks on short PN strings
+                
+                # Mantenemos el mismo algoritmo de Hash y la misma "sal"
                 salt = "anker_solix_ha_2024"
                 pn_hash = hashlib.sha256((salt + device_pn).encode()).hexdigest()
+                
+                # Devolvemos la tupla exacta con los 3 elementos que el sistema espera
                 return (pn_hash, device_pn, raw_hex)
 
             except (ConnectionError, OSError, TimeoutError, BrokenPipeError) as e:
-                # Handle connection errors - force disconnect and retry
                 error_msg = (
                     f"Connection error reading device PN (attempt {attempt + 1}): {e}"
                 )
                 self._handle_connection_error(error_msg)
                 self._logger.warning(error_msg)
-                # Force disconnect before retry
                 self._force_disconnect()
                 if attempt == 0:
                     self._logger.info("Will retry after reconnect...")

@@ -1,0 +1,517 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Anker Solix",
+        "description": "Por favor, introduce la dirección IP del dispositivo Anker Solix (el puerto por defecto 502 se usará automáticamente)",
+        "data": {
+          "ip_address": "Dirección IP"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Esta dirección IP ya está configurada"
+    },
+    "error": {
+      "unknown": "Ha ocurrido un error desconocido",
+      "cannot_connect": "No se puede conectar al dispositivo vía Modbus. Comprueba si la dirección IP es correcta, si el dispositivo está en línea y si Modbus TCP está habilitado en el puerto 502",
+      "invalid_ip": "Formato de dirección IPv4 no válido. Por favor, introduce una dirección IPv4 válida (ej. 192.168.1.100)",
+      "device_not_supported": "Dispositivo no compatible. No se ha podido encontrar un archivo de configuración coincidente para este modelo de dispositivo.",
+      "connection_timeout": "Tiempo de espera de conexión agotado. Comprueba si el dispositivo está en línea y accesible"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Anker Solix",
+        "description": "Configurar opciones de Anker Solix"
+      }
+    }
+  },
+  "exceptions": {
+    "charge_power_too_low": {
+      "message": "La potencia de carga disponible del dispositivo es de solo {power} W (mínimo requerido: 100 W), por lo que no se puede ajustar la potencia de carga. Por favor, comprueba el dispositivo."
+    },
+    "discharge_power_too_low": {
+      "message": "La potencia de descarga disponible del dispositivo es de solo {power} W (mínimo requerido: 100 W), por lo que no se puede ajustar la potencia de descarga. Por favor, comprueba el dispositivo."
+    },
+    "soc_must_be_greater_than": {
+      "message": "El valor de {entity} ({value}%) debe ser mayor que {target} ({target_value}%). Por favor, ajusta la configuración."
+    },
+    "soc_must_be_greater_than_or_equal": {
+      "message": "El valor de {entity} ({value}%) debe ser mayor o igual que {target} ({target_value}%). Por favor, ajusta la configuración."
+    },
+    "soc_must_be_less_than": {
+      "message": "El valor de {entity} ({value}%) debe ser menor que {target} ({target_value}%). Por favor, ajusta la configuración."
+    },
+    "soc_must_be_less_than_or_equal": {
+      "message": "El valor de {entity} ({value}%) debe ser menor o igual que {target} ({target_value}%). Por favor, ajusta la configuración."
+    },
+    "write_condition_not_met": {
+      "message": "No se puede establecer este valor porque no se cumple la condición requerida. Por favor, comprueba el estado del dispositivo."
+    },
+    "enable_backup_soc_first": {
+      "message": "Esta función requiere activar el interruptor de Reserva de Respaldo en los ajustes de la aplicación Anker."
+    },
+    "power_range_1_to_99_not_allowed": {
+      "message": "La potencia no se puede establecer en el rango de {forbidden_min}-{forbidden_max} W. Por favor, establece 0 W o {allowed_min}-{allowed_max} W."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "device_model": {
+        "name": "Modelo del Dispositivo"
+      },
+      "device_sn": {
+        "name": "Número de Serie del Dispositivo"
+      },
+      "device_sw_version": {
+        "name": "Versión de Firmware"
+      },
+      "device_pn": {
+        "name": "PN del Dispositivo"
+      },
+      "battery_soc": {
+        "name": "Nivel de Batería (SOC)"
+      },
+      "battery_soh": {
+        "name": "Salud de Batería (SOH)"
+      },
+      "pv_power": {
+        "name": "Potencia Solar"
+      },
+      "battery_charging_power": {
+        "name": "Potencia de Carga de la Batería"
+      },
+      "battery_discharging_power": {
+        "name": "Potencia de Descarga de la Batería"
+      },
+      "load_power": {
+        "name": "Consumo de la Vivienda"
+      },
+      "grid_import_power": {
+        "name": "Potencia Importada de la Red"
+      },
+      "grid_export_power": {
+        "name": "Potencia Exportada a la Red"
+      },
+      "ac_grid_output_power": {
+        "name": "Salida CA"
+      },
+      "pv_total_generation": {
+        "name": "Generación Solar Total"
+      },
+      "total_consumption": {
+        "name": "Consumo Total"
+      },
+      "cumulative_charge_energy": {
+        "name": "Energía de Carga de la Batería"
+      },
+      "cumulative_discharge_energy": {
+        "name": "Energía de Descarga de la Batería"
+      },
+      "internal_temperature": {
+        "name": "Temperatura Interna"
+      },
+      "rated_energy": {
+        "name": "Capacidad de la Batería"
+      },
+      "power_station_status": {
+        "name": "Estado de la Estación de Energía",
+        "state": {
+          "unknown": "Desconocido",
+          "grid_tied": "Conectado a la Red",
+          "off_grid": "Aislado (Off-grid)",
+          "standby": "En Espera",
+          "fault": "Fallo"
+        }
+      },
+      "battery_status": {
+        "name": "Estado del Dispositivo",
+        "state": {
+          "standby": "Inactivo",
+          "charging": "Cargando",
+          "discharging": "Descargando",
+          "sleep": "En Reposo"
+        }
+      },
+      "backup_soc_enable": {
+        "name": "Activar SOC de Reserva",
+        "state": {
+          "disabled": "Desactivado",
+          "enabled": "Activado"
+        }
+      },
+      "meter_model": {
+        "name": "Modelo del Medidor"
+      },
+      "meter_type": {
+        "name": "Tipo de Medidor",
+        "state": {
+          "single_phase": "Monofásico",
+          "three_phase": "Trifásico"
+        }
+      },
+      "meter_sn": {
+        "name": "Número de Serie del Medidor"
+      },
+      "meter_sw_version": {
+        "name": "Versión de Firmware del Medidor"
+      },
+      "primary_total_active_power": {
+        "name": "Potencia Activa Total CT Principal"
+      },
+      "primary_phase_1_active_power": {
+        "name": "Potencia Activa Fase 1 CT Principal"
+      },
+      "primary_phase_1_current": {
+        "name": "Corriente Fase 1 CT Principal"
+      },
+      "primary_phase_1_voltage": {
+        "name": "Voltaje Fase 1 CT Principal"
+      },
+      "primary_phase_2_active_power": {
+        "name": "Potencia Activa Fase 2 CT Principal"
+      },
+      "primary_phase_2_current": {
+        "name": "Corriente Fase 2 CT Principal"
+      },
+      "primary_phase_2_voltage": {
+        "name": "Voltaje Fase 2 CT Principal"
+      },
+      "primary_phase_3_active_power": {
+        "name": "Potencia Activa Fase 3 CT Principal"
+      },
+      "primary_phase_3_current": {
+        "name": "Corriente Fase 3 CT Principal"
+      },
+      "primary_phase_3_voltage": {
+        "name": "Voltaje Fase 3 CT Principal"
+      },
+      "secondary_total_active_power": {
+        "name": "Potencia Activa Total CT Secundario"
+      },
+      "secondary_phase_1_active_power": {
+        "name": "Potencia Activa Fase 1 CT Secundario"
+      },
+      "secondary_phase_1_current": {
+        "name": "Corriente Fase 1 CT Secundario"
+      },
+      "secondary_phase_1_voltage": {
+        "name": "Voltaje Fase 1 CT Secundario"
+      },
+      "secondary_phase_2_active_power": {
+        "name": "Potencia Activa Fase 2 CT Secundario"
+      },
+      "secondary_phase_2_current": {
+        "name": "Corriente Fase 2 CT Secundario"
+      },
+      "secondary_phase_2_voltage": {
+        "name": "Voltaje Fase 2 CT Secundario"
+      },
+      "secondary_phase_3_active_power": {
+        "name": "Potencia Activa Fase 3 CT Secundario"
+      },
+      "secondary_phase_3_current": {
+        "name": "Corriente Fase 3 CT Secundario"
+      },
+      "secondary_phase_3_voltage": {
+        "name": "Voltaje Fase 3 CT Secundario"
+      },
+      "real_time_power": {
+        "name": "Potencia Activa en Tiempo Real"
+      },
+      "voltage": {
+        "name": "Voltaje en Tiempo Real"
+      },
+      "current": {
+        "name": "Corriente en Tiempo Real"
+      },
+      "switch_status": {
+        "name": "Estado del Interruptor",
+        "state": {
+          "disconnected": "Desconectado",
+          "connected": "Conectado"
+        }
+      },
+      "product_number": {
+        "name": "Número de Producto"
+      },
+      "device_hw_version": {
+        "name": "Versión de Hardware"
+      },
+      "rated_power": {
+        "name": "Potencia Nominal"
+      },
+      "minimum_output_current": {
+        "name": "Corriente Mínima de Salida"
+      },
+      "maximum_output_current": {
+        "name": "Corriente Máxima de Salida"
+      },
+      "l1_n_voltage": {
+        "name": "Voltaje L1-N"
+      },
+      "l2_n_voltage": {
+        "name": "Voltaje L2-N"
+      },
+      "l3_n_voltage": {
+        "name": "Voltaje L3-N"
+      },
+      "l1_l2_voltage": {
+        "name": "Voltaje L1-L2"
+      },
+      "l2_l3_voltage": {
+        "name": "Voltaje L2-L3"
+      },
+      "l3_l1_voltage": {
+        "name": "Voltaje L3-L1"
+      },
+      "l1_current": {
+        "name": "Corriente L1"
+      },
+      "l2_current": {
+        "name": "Corriente L2"
+      },
+      "l3_current": {
+        "name": "Corriente L3"
+      },
+      "l1_active_power": {
+        "name": "Potencia Activa L1"
+      },
+      "l2_active_power": {
+        "name": "Potencia Activa L2"
+      },
+      "l3_active_power": {
+        "name": "Potencia Activa L3"
+      },
+      "total_charging_active_power": {
+        "name": "Potencia Activa Total de Carga"
+      },
+      "l1_reactive_power": {
+        "name": "Potencia Reactiva L1"
+      },
+      "l2_reactive_power": {
+        "name": "Potencia Reactiva L2"
+      },
+      "l3_reactive_power": {
+        "name": "Potencia Reactiva L3"
+      },
+      "l1_apparent_power": {
+        "name": "Potencia Aparente L1"
+      },
+      "l2_apparent_power": {
+        "name": "Potencia Aparente L2"
+      },
+      "l3_apparent_power": {
+        "name": "Potencia Aparente L3"
+      },
+      "current_charging_session_duration": {
+        "name": "Duración de la Sesión Actual"
+      },
+      "current_charging_capacity": {
+        "name": "Energía Cargada en la Sesión"
+      },
+      "pwm_enabled_status": {
+        "name": "Estado PWM",
+        "state": {
+          "disabled": "Desactivado",
+          "enabled": "Activado"
+        }
+      },
+      "phase_operating_mode": {
+        "name": "Modo de Fase operacional",
+        "state": {
+          "single_phase": "Monofásico",
+          "three_phase": "Trifásico"
+        }
+      },
+      "charging_mode": {
+        "name": "Modo de Carga",
+        "state": {
+          "solar_grid": "Solar y Red",
+          "only_solar": "Solo Solar"
+        }
+      },
+      "load_balancing_enabled_status": {
+        "name": "Equilibrio de Cargas",
+        "state": {
+          "disabled": "Desactivado",
+          "enabled": "Activado"
+        }
+      },
+      "solar_power_balancing_enabled_status": {
+        "name": "Equilibrio de Energía Solar",
+        "state": {
+          "disabled": "Desactivado",
+          "enabled": "Activado"
+        }
+      },
+      "cp_acquisition_voltage": {
+        "name": "Voltaje Señal CP"
+      },
+      "cp_signal_status": {
+        "name": "Estado de la Señal CP",
+        "state": {
+          "A_12V": "A (12V)",
+          "B1_9V": "B1 (9V)",
+          "B2_9V": "B2 (9V)",
+          "C1_6V": "C1 (6V)",
+          "C2_6V": "C2 (6V)",
+          "error": "Error",
+          "D1_3V": "D1 (3V)",
+          "D2_3V": "D2 (3V)",
+          "E_0V": "E (0V)",
+          "F_minus_12V": "F (-12V)"
+        }
+      },
+      "relay_1_temperature": {
+        "name": "Temperatura Relé 1"
+      },
+      "relay_2_temperature": {
+        "name": "Temperatura Relé 2"
+      },
+      "boost_mode_status": {
+        "name": "Estado del Modo Boost",
+        "state": {
+          "disabled": "Desactivado",
+          "enabled": "Activado"
+        }
+      },
+      "led_light_brightness_status": {
+        "name": "Brillo del LED"
+      },
+      "charging_status": {
+        "name": "Estado de Carga",
+        "state": {
+          "idle": "Inactivo",
+          "preparing": "Preparando",
+          "charging": "Cargando",
+          "charger_paused": "Cargador Pausado",
+          "vehicle_paused": "Vehículo Pausado",
+          "charging_completed": "Carga Completada",
+          "reserving": "Reservando",
+          "disabled": "Desactivado",
+          "error": "Error"
+        }
+      },
+      "ocpp_connection_status": {
+        "name": "Conexión OCPP",
+        "state": {
+          "not_connected": "No Conectado",
+          "connecting": "Conectando",
+          "connected": "Conectado"
+        }
+      },
+      "mqtt_connection_status": {
+        "name": "Conexión MQTT",
+        "state": {
+          "not_connected": "No Conectado",
+          "connected": "Conectado"
+        }
+      }
+    },
+    "select": {
+      "operating_mode": {
+        "name": "Modo de Operación",
+        "state": {
+          "self_consumption": "Modo Autoconsumo",
+          "tou_mode": "Modo Tiempo de Uso (Tarifas)",
+          "custom_mode": "Modo Personalizado",
+          "socket_overlay_mode": "Modo Prioridad Enchufe",
+          "third_party_control": "Controlado por Terceros",
+          "smart_mode": "Modo Inteligente",
+          "dynamic_pricing": "Modo de Tarifa Dinámica"
+        }
+      },
+      "battery_power_direction": {
+        "name": "Flujo de Red",
+        "state": {
+          "charge": "Importar de la Red",
+          "discharge": "Exportar a la Red"
+        }
+      },
+      "export_power_control": {
+        "name": "Método de Control de Exportación",
+        "state": {
+          "disabled": "Desactivado",
+          "percentage_control": "Control por Porcentaje",
+          "fixed_value_control": "Control por Valor Fijo"
+        }
+      },
+      "power_on_off_control": {
+        "name": "Control de Encendido/Apagado",
+        "state": {
+          "power_on": "Encendido",
+          "power_off": "Apagado"
+        }
+      },
+      "charging_command": {
+        "name": "Comando de Carga",
+        "state": {
+          "start_charging": "Iniciar Carga",
+          "stop_charging": "Detener Carga"
+        }
+      },
+      "boost_mode_control": {
+        "name": "Modo Boost",
+        "state": {
+          "on": "Activar"
+        }
+      },
+      "charging_phases_setting": {
+        "name": "Configuración de Fases de Carga",
+        "state": {
+          "automatic": "Automático",
+          "fixed_single_phase": "Monofásico",
+          "fixed_three_phase": "Trifásico"
+        }
+      }
+    },
+    "number": {
+      "battery_charge_discharge_setpoint": {
+        "name": "Consigna de Carga/Descarga de Batería"
+      },
+      "battery_power_setpoint": {
+        "name": "Potencia Objetivo de Red"
+      },
+      "charging_limit_soc": {
+        "name": "Límite de Carga"
+      },
+      "discharge_limit_soc": {
+        "name": "Límite de Descarga"
+      },
+      "backup_reserve_soc": {
+        "name": "Reserva de Respaldo"
+      },
+      "ac_active_power_percent": {
+        "name": "Porcentaje de Ajuste de Potencia Activa"
+      },
+      "maximum_current_setting": {
+        "name": "Límite de Corriente Máxima"
+      },
+      "set_timeout": {
+        "name": "Tiempo de Espera de Carga"
+      }
+    },
+    "switch": {
+      "power_on_off_control": {
+        "name": "Interruptor de Salida"
+      },
+      "power_switch": {
+        "name": "Interruptor de Enchufe"
+      }
+    },
+    "button": {
+      "start_charging_btn": {
+        "name": "Iniciar Carga"
+      },
+      "stop_charging_btn": {
+        "name": "Detener Carga"
+      },
+      "boost_mode_control": {
+        "name": "Modo Boost"
+      }
+    }
+  }
+}

@@ -233,6 +233,182 @@
           "disconnected": "Ausschalten",
           "connected": "Einschalten"
         }
+      },
+      "product_number": {
+        "name": "Produktnummer"
+      },
+      "device_hw_version": {
+        "name": "Hardware-Version"
+      },
+      "rated_power": {
+        "name": "Nennleistung"
+      },
+      "minimum_output_current": {
+        "name": "Minimaler Ausgangsstrom"
+      },
+      "maximum_output_current": {
+        "name": "Maximaler Ausgangsstrom"
+      },
+      "l1_n_voltage": {
+        "name": "L1-N Spannung"
+      },
+      "l2_n_voltage": {
+        "name": "L2-N Spannung"
+      },
+      "l3_n_voltage": {
+        "name": "L3-N Spannung"
+      },
+      "l1_l2_voltage": {
+        "name": "L1-L2 Spannung"
+      },
+      "l2_l3_voltage": {
+        "name": "L2-L3 Spannung"
+      },
+      "l3_l1_voltage": {
+        "name": "L3-L1 Spannung"
+      },
+      "l1_current": {
+        "name": "L1 Strom"
+      },
+      "l2_current": {
+        "name": "L2 Strom"
+      },
+      "l3_current": {
+        "name": "L3 Strom"
+      },
+      "l1_active_power": {
+        "name": "L1 Wirkleistung"
+      },
+      "l2_active_power": {
+        "name": "L2 Wirkleistung"
+      },
+      "l3_active_power": {
+        "name": "L3 Wirkleistung"
+      },
+      "total_charging_active_power": {
+        "name": "Gesamte Ladewirkleistung"
+      },
+      "l1_reactive_power": {
+        "name": "L1 Blindleistung"
+      },
+      "l2_reactive_power": {
+        "name": "L2 Blindleistung"
+      },
+      "l3_reactive_power": {
+        "name": "L3 Blindleistung"
+      },
+      "l1_apparent_power": {
+        "name": "L1 Scheinleistung"
+      },
+      "l2_apparent_power": {
+        "name": "L2 Scheinleistung"
+      },
+      "l3_apparent_power": {
+        "name": "L3 Scheinleistung"
+      },
+      "current_charging_session_duration": {
+        "name": "Dauer der aktuellen Ladesitzung"
+      },
+      "current_charging_capacity": {
+        "name": "Geladene Energie der aktuellen Sitzung"
+      },
+      "pwm_enabled_status": {
+        "name": "PWM-Status",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
+        }
+      },
+      "phase_operating_mode": {
+        "name": "Betriebsphasenmodus",
+        "state": {
+          "single_phase": "Einphasig",
+          "three_phase": "Dreiphasig"
+        }
+      },
+      "charging_mode": {
+        "name": "Lademodus",
+        "state": {
+          "solar_grid": "Solar und Netz",
+          "only_solar": "Nur Solar"
+        }
+      },
+      "load_balancing_enabled_status": {
+        "name": "Lastausgleich",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
+        }
+      },
+      "solar_power_balancing_enabled_status": {
+        "name": "Solarleistungsausgleich",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
+        }
+      },
+      "cp_acquisition_voltage": {
+        "name": "CP-Signalspannung"
+      },
+      "cp_signal_status": {
+        "name": "CP-Signalstatus",
+        "state": {
+          "A_12V": "A (12V)",
+          "B1_9V": "B1 (9V)",
+          "B2_9V": "B2 (9V)",
+          "C1_6V": "C1 (6V)",
+          "C2_6V": "C2 (6V)",
+          "error": "Fehler",
+          "D1_3V": "D1 (3V)",
+          "D2_3V": "D2 (3V)",
+          "E_0V": "E (0V)",
+          "F_minus_12V": "F (-12V)"
+        }
+      },
+      "relay_1_temperature": {
+        "name": "Temperatur Relais 1"
+      },
+      "relay_2_temperature": {
+        "name": "Temperatur Relais 2"
+      },
+      "boost_mode_status": {
+        "name": "Boost-Modus-Status",
+        "state": {
+          "disabled": "Deaktiviert",
+          "enabled": "Aktiviert"
+        }
+      },
+      "led_light_brightness_status": {
+        "name": "LED-Helligkeit"
+      },
+      "charging_status": {
+        "name": "Ladestatus",
+        "state": {
+          "idle": "Standby",
+          "preparing": "Vorbereitung",
+          "charging": "Laden",
+          "charger_paused": "Ladegerät pausiert",
+          "vehicle_paused": "Fahrzeug pausiert",
+          "charging_completed": "Ladevorgang abgeschlossen",
+          "reserving": "Reserviert",
+          "disabled": "Deaktiviert",
+          "error": "Fehler"
+        }
+      },
+      "ocpp_connection_status": {
+        "name": "OCPP-Verbindung",
+        "state": {
+          "not_connected": "Nicht verbunden",
+          "connecting": "Verbinden...",
+          "connected": "Verbunden"
+        }
+      },
+      "mqtt_connection_status": {
+        "name": "MQTT-Verbindung",
+        "state": {
+          "not_connected": "Nicht verbunden",
+          "connected": "Verbunden"
+        }
       }
     },
     "select": {
@@ -269,6 +445,27 @@
           "power_on": "Einschalten",
           "power_off": "Ausschalten"
         }
+      },
+      "charging_command": {
+        "name": "Ladebefehl",
+        "state": {
+          "start_charging": "Ladevorgang starten",
+          "stop_charging": "Ladevorgang stoppen"
+        }
+      },
+      "boost_mode_control": {
+        "name": "Boost-Modus",
+        "state": {
+          "on": "Aktivieren"
+        }
+      },
+      "charging_phases_setting": {
+        "name": "Ladephaseneinstellung",
+        "state": {
+          "automatic": "Automatisch",
+          "fixed_single_phase": "Einphasig fixieren",
+          "fixed_three_phase": "Dreiphasig fixieren"
+        }
       }
     },
     "number": {
@@ -289,6 +486,12 @@
       },
       "ac_active_power_percent": {
         "name": "Wirkleistungsanpassung in Prozent"
+      },
+      "maximum_current_setting": {
+        "name": "Maximaler Ladestrom"
+      },
+      "set_timeout": {
+        "name": "Lade-Timeout-Zeit"
       }
     },
     "switch": {
@@ -297,6 +500,17 @@
       },
       "power_switch": {
         "name": "Steckdosenschalter"
+      }
+    },
+    "button": {
+      "start_charging_btn": {
+        "name": "Ladevorgang starten"
+      },
+      "stop_charging_btn": {
+        "name": "Ladevorgang stoppen"
+      },
+      "boost_mode_control": {
+        "name": "Boost-Modus"
       }
     }
   }

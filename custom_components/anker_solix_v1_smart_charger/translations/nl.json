@@ -233,6 +233,182 @@
           "disconnected": "Uitschakelen",
           "connected": "Inschakelen"
         }
+      },
+      "product_number": {
+        "name": "Productnummer"
+      },
+      "device_hw_version": {
+        "name": "Hardwareversie"
+      },
+      "rated_power": {
+        "name": "Nominaal vermogen"
+      },
+      "minimum_output_current": {
+        "name": "Minimale uitgangsstroom"
+      },
+      "maximum_output_current": {
+        "name": "Maximale uitgangsstroom"
+      },
+      "l1_n_voltage": {
+        "name": "L1-N spanning"
+      },
+      "l2_n_voltage": {
+        "name": "L2-N spanning"
+      },
+      "l3_n_voltage": {
+        "name": "L3-N spanning"
+      },
+      "l1_l2_voltage": {
+        "name": "L1-L2 spanning"
+      },
+      "l2_l3_voltage": {
+        "name": "L2-L3 spanning"
+      },
+      "l3_l1_voltage": {
+        "name": "L3-L1 spanning"
+      },
+      "l1_current": {
+        "name": "L1 stroom"
+      },
+      "l2_current": {
+        "name": "L2 stroom"
+      },
+      "l3_current": {
+        "name": "L3 stroom"
+      },
+      "l1_active_power": {
+        "name": "L1 actief vermogen"
+      },
+      "l2_active_power": {
+        "name": "L2 actief vermogen"
+      },
+      "l3_active_power": {
+        "name": "L3 actief vermogen"
+      },
+      "total_charging_active_power": {
+        "name": "Totaal actief laadvermogen"
+      },
+      "l1_reactive_power": {
+        "name": "L1 reactief vermogen"
+      },
+      "l2_reactive_power": {
+        "name": "L2 reactief vermogen"
+      },
+      "l3_reactive_power": {
+        "name": "L3 reactief vermogen"
+      },
+      "l1_apparent_power": {
+        "name": "L1 schijnbaar vermogen"
+      },
+      "l2_apparent_power": {
+        "name": "L2 schijnbaar vermogen"
+      },
+      "l3_apparent_power": {
+        "name": "L3 schijnbaar vermogen"
+      },
+      "current_charging_session_duration": {
+        "name": "Duur huidige laadsessie"
+      },
+      "current_charging_capacity": {
+        "name": "Geladen energie in huidige sessie"
+      },
+      "pwm_enabled_status": {
+        "name": "PWM-status",
+        "state": {
+          "disabled": "Uitgeschakeld",
+          "enabled": "Ingeschakeld"
+        }
+      },
+      "phase_operating_mode": {
+        "name": "Fase-bedrijfsmodus",
+        "state": {
+          "single_phase": "Enkelfasig",
+          "three_phase": "Driefasig"
+        }
+      },
+      "charging_mode": {
+        "name": "Laadmodus",
+        "state": {
+          "solar_grid": "Zon en net",
+          "only_solar": "Alleen zon"
+        }
+      },
+      "load_balancing_enabled_status": {
+        "name": "Load balancing",
+        "state": {
+          "disabled": "Uitgeschakeld",
+          "enabled": "Ingeschakeld"
+        }
+      },
+      "solar_power_balancing_enabled_status": {
+        "name": "Zonne-energie balancering",
+        "state": {
+          "disabled": "Uitgeschakeld",
+          "enabled": "Ingeschakeld"
+        }
+      },
+      "cp_acquisition_voltage": {
+        "name": "CP-signaalspanning"
+      },
+      "cp_signal_status": {
+        "name": "CP-signaalstatus",
+        "state": {
+          "A_12V": "A (12V)",
+          "B1_9V": "B1 (9V)",
+          "B2_9V": "B2 (9V)",
+          "C1_6V": "C1 (6V)",
+          "C2_6V": "C2 (6V)",
+          "error": "Fout",
+          "D1_3V": "D1 (3V)",
+          "D2_3V": "D2 (3V)",
+          "E_0V": "E (0V)",
+          "F_minus_12V": "F (-12V)"
+        }
+      },
+      "relay_1_temperature": {
+        "name": "Temperatuur relais 1"
+      },
+      "relay_2_temperature": {
+        "name": "Temperatuur relais 2"
+      },
+      "boost_mode_status": {
+        "name": "Boost-modus status",
+        "state": {
+          "disabled": "Uitgeschakeld",
+          "enabled": "Ingeschakeld"
+        }
+      },
+      "led_light_brightness_status": {
+        "name": "LED-helderheid"
+      },
+      "charging_status": {
+        "name": "Laadstatus",
+        "state": {
+          "idle": "Inactief",
+          "preparing": "Voorbereiden",
+          "charging": "Opladen",
+          "charger_paused": "Lader gepauzeerd",
+          "vehicle_paused": "Voertuig gepauzeerd",
+          "charging_completed": "Laden voltooid",
+          "reserving": "Reserveren",
+          "disabled": "Uitgeschakeld",
+          "error": "Fout"
+        }
+      },
+      "ocpp_connection_status": {
+        "name": "OCPP-verbinding",
+        "state": {
+          "not_connected": "Niet verbonden",
+          "connecting": "Verbinden",
+          "connected": "Verbonden"
+        }
+      },
+      "mqtt_connection_status": {
+        "name": "MQTT-verbinding",
+        "state": {
+          "not_connected": "Niet verbonden",
+          "connected": "Verbonden"
+        }
       }
     },
     "select": {
@@ -269,6 +445,27 @@
           "power_on": "Inschakelen",
           "power_off": "Uitschakelen"
         }
+      },
+      "charging_command": {
+        "name": "Laadcommando",
+        "state": {
+          "start_charging": "Start laden",
+          "stop_charging": "Stop laden"
+        }
+      },
+      "boost_mode_control": {
+        "name": "Boost-modus regeling",
+        "state": {
+          "on": "Inschakelen"
+        }
+      },
+      "charging_phases_setting": {
+        "name": "Instelling laadfasen",
+        "state": {
+          "automatic": "Automatisch",
+          "fixed_single_phase": "Vast enkelfasig",
+          "fixed_three_phase": "Vast driefasig"
+        }
       }
     },
     "number": {
@@ -289,6 +486,12 @@
       },
       "ac_active_power_percent": {
         "name": "Percentage actieve vermogensaanpassing"
+      },
+      "maximum_current_setting": {
+        "name": "Maximale stroominstelling"
+      },
+      "set_timeout": {
+        "name": "Laadtime-out"
       }
     },
     "switch": {
@@ -297,6 +500,17 @@
       },
       "power_switch": {
         "name": "Stopcontactschakelaar"
+      }
+    },
+    "button": {
+      "start_charging_btn": {
+        "name": "Start laden"
+      },
+      "stop_charging_btn": {
+        "name": "Stop laden"
+      },
+      "boost_mode_control": {
+        "name": "Boost-modus"
       }
     }
   }

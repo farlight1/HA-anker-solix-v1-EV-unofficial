@@ -1,18 +1,19 @@
-# Anker Solix Official Integration for Home Assistant
+# Anker Solix V1 Smart EV Charger Integration for Home Assistant
 
 [![HACS Badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub Release](https://img.shields.io/github/release/anker-charging/ha-anker-solix-official.svg)](https://github.com/anker-charging/ha-anker-solix-official/releases)
-[![License](https://img.shields.io/github/license/anker-charging/ha-anker-solix-official.svg)](LICENSE)
+[![GitHub Release](https://img.shields.io/github/release/farlight1/HA-anker-solix-v1-EV-unofficial.svg)](https://github.com/farlight1/HA-anker-solix-v1-EV-unofficial/releases)
+[![License](https://img.shields.io/github/license/farlight1/HA-anker-solix-v1-EV-unofficial.svg)](LICENSE)
 
-The **official** Home Assistant integration for [Anker Solix](https://www.anker.com/solix) devices, developed and maintained by Anker Innovations.
+Home Assistant integration for [Anker Solix V1 Smart EV Charger](https://www.ankersolix.com/eu/smart-ev-charger-v1) devices.
 
-This integration connects to your Anker Solix devices **locally** via Modbus TCP on your home network. All communication stays on your LAN — no cloud servers, no API keys, no internet dependency.
+This integration connects to your V1 Smart EV Chrger devices **locally** via Modbus TCP on your home network. All communication stays on your LAN — no cloud servers, no API keys, no internet dependency.
+This integration is a fork of the official [Anker Solix Official Integration for Home Assistant](https://github.com/anker-charging/ha-anker-solix-official), but highly modified to support MODBUS TCP on the charger
 
 ## Features
 
 - **Local Modbus TCP** — Direct communication over LAN, no cloud dependency, no internet required
 - **Real-time monitoring** — Live device status, power metrics, and diagnostics updated every 5 seconds
-- **Device control** — Operating mode switching, power setpoints, and output control via Home Assistant UI
+- **Device control** — Operating mode switching, boost mode, and output power control via Home Assistant UI
 
 ## Preview
 
@@ -20,15 +21,7 @@ This integration connects to your Anker Solix devices **locally** via Modbus TCP
 
 ## Supported Devices
 
-| Device | Firmware Support |
-|--------|-----------------|
-| Anker SOLIX Smart Plug | Coming Soon |
-| Anker SOLIX Smart Plug Gen 2 | All Firmware Versions |
-| Anker SOLIX Solarbank Max AC | All Firmware Versions |
-| Anker SOLIX Solarbank 4 E5000 Pro | All Firmware Versions |
-| Anker SOLIX Smart Meter Gen 2 | Coming Soon |
-
-More Anker Solix devices are being added progressively. Stay tuned for updates.
+| Anker SOLIX V1 Smart EV Charger
 
 ## Prerequisites: Enable Modbus TCP in Anker App
 
@@ -55,21 +48,22 @@ Before setting up this integration, you must enable Modbus TCP on your device th
 ### HACS (Recommended)
 
 1. Open **HACS** in Home Assistant
+2. Go to **Custom Repositories** and add repository: "https://github.com/farlight1/HA-anker-solix-v1-EV-unofficial" Type: Integration
 2. Go to **Integrations** and click **+**
-3. Search for **Anker Solix Official**
+3. Search for **Anker SOLIX V1 Smart EV Charger**
 4. Click **Install** and restart Home Assistant
 
 ### Manual
 
-1. Download the [latest release](https://github.com/anker-charging/ha-anker-solix-official/releases)
-2. Copy `custom_components/anker_solix_official/` into your Home Assistant `config/custom_components/` directory
+1. Download the [latest release](https://github.com/farlight1/HA-anker-solix-v1-EV-unofficial/releases)
+2. Copy `custom_components/ha-anker-solix-unofficial/` into your Home Assistant `config/custom_components/` directory
 3. Restart Home Assistant
 
 ## Setup
 
 1. Go to **Settings** > **Devices & Services**
 2. Click **Add Integration**
-3. Search for **Anker Solix Official**
+3. Search for **Anker Solix**
 4. Enter your device's local IP address (Modbus TCP port 502 is used by default)
 5. The integration auto-detects the device model and loads the matching configuration
 
@@ -138,10 +132,6 @@ Yes. You can add multiple Anker devices in Home Assistant, each configured and c
 - Restart the Home Assistant integration
 - Check if the device has entered standby mode
 - Check the Home Assistant logs for communication errors
-
-## Contributing
-
-Contributions are welcome. Please open an [issue](https://github.com/anker-charging/ha-anker-solix-official/issues) to report bugs or suggest features, or submit a pull request.
 
 ## License
 

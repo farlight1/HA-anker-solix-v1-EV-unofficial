@@ -59,6 +59,7 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def _check_device_support(self, ip_address: str, port: int = 502) -> tuple[bool, str]:
         import asyncio
+        import yaml as _yaml # Se recomienda mover este import al principio del archivo
 
         client = None
         try:
@@ -75,7 +76,7 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 )
                 return False, ""
 
-            # Read device PN using unified method (returns tuple: pn_hash, raw_pn, raw_hex)
+            # Read device PN using unified method
             result = await loop.run_in_executor(None, client.read_device_pn)
             pn_hash, raw_pn, raw_hex = result
             if not pn_hash:
@@ -97,22 +98,19 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 raw_hex,
             )
 
-            # Check if configuration file exists (file I/O is quick, no need for executor)
+            # Check if configuration file exists
             from pathlib import Path
-
             config_file = f"config/{pn_hash}.yaml"
             config_path = Path(__file__).resolve().parent / config_file
 
             if not config_path.exists():
                 _LOGGER.warning(
-                    "Device PN '%s' (Raw: '%s') detected at %s:%d, but config file not found at %s. "
-                    "Raw registers: [%s]",
+                    "Device PN '%s' (Raw: '%s') detected at %s:%d, but config file not found at %s.",
                     pn_hash,
                     raw_pn,
                     ip_address,
                     port,
                     config_path,
-                    raw_hex,
                 )
                 return False, ""
 
@@ -123,13 +121,16 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ip_address,
                 port,
             )
-
             sn = ""
             try:
-                import yaml as _yaml
+                # --- SOLUCIÓN: Ejecutar la lectura del archivo en el executor ---
+                def load_yaml_file(path):
+                    with open(path, encoding="utf-8") as f:
+                        return _yaml.safe_load(f)
 
-                with open(config_path, encoding="utf-8") as f:
-                    device_cfg = _yaml.safe_load(f)
+                device_cfg = await loop.run_in_executor(None, load_yaml_file, config_path)
+                # -------------------------------------------------------------
+
                 sn_key = device_cfg.get("product_info", {}).get("sn_register_key")
                 if sn_key:
                     sn_cfg = device_cfg.get("read_quantities", {}).get(sn_key, {})
@@ -148,12 +149,7 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                             for r in regs:
                                 raw += bytes([(r >> 8) & 0xFF, r & 0xFF])
                             sn = raw.decode("utf-8", errors="ignore").rstrip("\x00").strip()
-                            _LOGGER.info(
-                                "Device SN read at %s:%d: '%s'",
-                                ip_address,
-                                port,
-                                sn[:6] + "***" if len(sn) > 6 else "***",
-                            )
+                            _LOGGER.info("Device SN read successfully.")
                         else:
                             _LOGGER.warning(
                                 "Failed to read SN from %s:%d, will use IP as unique_id",
@@ -161,26 +157,15 @@ class AnkerSolixOfficialConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                                 port,
                             )
             except Exception as e:
-                _LOGGER.warning(
-                    "Exception reading SN from %s:%d: %s, will use IP as unique_id",
-                    ip_address,
-                    port,
-                    e,
-                )
+                _LOGGER.warning("Exception reading SN from %s:%d: %s", ip_address, port, e)
                 sn = ""
 
             return True, sn
 
         except Exception as e:
-            _LOGGER.error(
-                "Exception while checking device support at %s:%d: %s",
-                ip_address,
-                port,
-                e,
-            )
+            _LOGGER.error("Exception while checking device support at %s:%d: %s", ip_address, port, e)
             return False, ""
         finally:
-            # Ensure client is properly closed
             try:
                 if client:
                     client.disconnect()

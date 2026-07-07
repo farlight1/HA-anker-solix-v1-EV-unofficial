@@ -139,19 +139,28 @@ class ModbusLocalDeviceSensor(AnkerSolixBaseEntity, SensorEntity):
         if unit and unit != "/":
             self._attr_native_unit_of_measurement = unit
 
-        # Set device class based on unit
-        if unit == PERCENTAGE:
-            self._attr_device_class = SensorDeviceClass.BATTERY
-        elif unit in [UnitOfPower.WATT, UnitOfPower.KILO_WATT, "W", "kW"]:
-            self._attr_device_class = SensorDeviceClass.POWER
-        elif unit in [UnitOfEnergy.KILO_WATT_HOUR, UnitOfEnergy.WATT_HOUR, "kWh", "Wh"]:
-            self._attr_device_class = SensorDeviceClass.ENERGY
-        elif unit in [UnitOfTemperature.CELSIUS, "°C"]:
-            self._attr_device_class = SensorDeviceClass.TEMPERATURE
-        elif unit in [UnitOfElectricPotential.VOLT, "V"]:
-            self._attr_device_class = SensorDeviceClass.VOLTAGE
-        elif unit in [UnitOfElectricCurrent.AMPERE, "A"]:
-            self._attr_device_class = SensorDeviceClass.CURRENT
+        # --- NUEVO: Dar prioridad al device_class del YAML ---
+        yaml_device_class = config.get("device_class")
+        if yaml_device_class is not None:
+            # Si en el YAML pusiste device_class: "energy" o device_class: None
+            if yaml_device_class: 
+                self._attr_device_class = yaml_device_class
+        else:
+            # Set device class based on unit (solo si no se especificó en YAML)
+            if unit == PERCENTAGE or unit == "%":
+                # Si tienes un sensor que SÍ es la batería del coche, lo marcará.
+                # Si no quieres que NINGÚN % sea batería, puedes borrar esta línea.
+                self._attr_device_class = SensorDeviceClass.BATTERY
+            elif unit in [UnitOfPower.WATT, UnitOfPower.KILO_WATT, "W", "kW"]:
+                self._attr_device_class = SensorDeviceClass.POWER
+            elif unit in [UnitOfEnergy.KILO_WATT_HOUR, UnitOfEnergy.WATT_HOUR, "kWh", "Wh"]:
+                self._attr_device_class = SensorDeviceClass.ENERGY
+            elif unit in [UnitOfTemperature.CELSIUS, "°C"]:
+                self._attr_device_class = SensorDeviceClass.TEMPERATURE
+            elif unit in [UnitOfElectricPotential.VOLT, "V"]:
+                self._attr_device_class = SensorDeviceClass.VOLTAGE
+            elif unit in [UnitOfElectricCurrent.AMPERE, "A"]:
+                self._attr_device_class = SensorDeviceClass.CURRENT
 
         # Set state class
         if unit in [UnitOfEnergy.KILO_WATT_HOUR, UnitOfEnergy.WATT_HOUR, "kWh", "Wh"]:

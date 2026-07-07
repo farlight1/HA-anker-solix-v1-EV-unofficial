@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Anker Solix",
+        "title": "Anker SOLIX V1 Smart EV Charger",
         "description": "Please enter the IP address of the Anker Solix device (default port 502 will be used automatically)",
         "data": {
           "ip_address": "IP Address"
@@ -23,8 +23,8 @@
   "options": {
     "step": {
       "init": {
-        "title": "Anker Solix Options",
-        "description": "Configure Anker Solix options"
+        "title": "Anker SOLIX V1 Smart EV Charger Options",
+        "description": "Configure Anker SOLIX V1 options"
       }
     }
   },

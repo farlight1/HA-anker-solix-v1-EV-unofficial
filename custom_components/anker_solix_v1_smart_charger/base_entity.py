@@ -7,6 +7,7 @@ import logging
 from typing import Any, Callable, Coroutine, TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -42,6 +43,13 @@ class AnkerSolixBaseEntity(CoordinatorEntity):
         
         self._config = entity_config
         self._register_address = entity_config.get("address")
+        
+        # --- Codigo que lee la categoria de la entidad del .yaml ---
+        category = entity_config.get("entity_category")
+        if category == "diagnostic":
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+        elif category == "config":
+            self._attr_entity_category = EntityCategory.CONFIG
 
         # Set common attributes
         self._attr_has_entity_name = True

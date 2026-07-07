@@ -233,6 +233,182 @@
           "disconnected": "Éteindre",
           "connected": "Allumer"
         }
+      },
+      "product_number": {
+        "name": "Numéro de produit"
+      },
+      "device_hw_version": {
+        "name": "Version du matériel"
+      },
+      "rated_power": {
+        "name": "Puissance nominale"
+      },
+      "minimum_output_current": {
+        "name": "Courant de sortie minimum"
+      },
+      "maximum_output_current": {
+        "name": "Courant de sortie maximum"
+      },
+      "l1_n_voltage": {
+        "name": "Tension L1-N"
+      },
+      "l2_n_voltage": {
+        "name": "Tension L2-N"
+      },
+      "l3_n_voltage": {
+        "name": "Tension L3-N"
+      },
+      "l1_l2_voltage": {
+        "name": "Tension L1-L2"
+      },
+      "l2_l3_voltage": {
+        "name": "Tension L2-L3"
+      },
+      "l3_l1_voltage": {
+        "name": "Tension L3-L1"
+      },
+      "l1_current": {
+        "name": "Courant L1"
+      },
+      "l2_current": {
+        "name": "Courant L2"
+      },
+      "l3_current": {
+        "name": "Courant L3"
+      },
+      "l1_active_power": {
+        "name": "Puissance active L1"
+      },
+      "l2_active_power": {
+        "name": "Puissance active L2"
+      },
+      "l3_active_power": {
+        "name": "Puissance active L3"
+      },
+      "total_charging_active_power": {
+        "name": "Puissance active totale de charge"
+      },
+      "l1_reactive_power": {
+        "name": "Puissance réactive L1"
+      },
+      "l2_reactive_power": {
+        "name": "Puissance réactive L2"
+      },
+      "l3_reactive_power": {
+        "name": "Puissance réactive L3"
+      },
+      "l1_apparent_power": {
+        "name": "Puissance apparente L1"
+      },
+      "l2_apparent_power": {
+        "name": "Puissance apparente L2"
+      },
+      "l3_apparent_power": {
+        "name": "Puissance apparente L3"
+      },
+      "current_charging_session_duration": {
+        "name": "Durée de la session actuelle"
+      },
+      "current_charging_capacity": {
+        "name": "Énergie chargée dans la session"
+      },
+      "pwm_enabled_status": {
+        "name": "Statut PWM",
+        "state": {
+          "disabled": "Désactivé",
+          "enabled": "Activé"
+        }
+      },
+      "phase_operating_mode": {
+        "name": "Mode de fonctionnement des phases",
+        "state": {
+          "single_phase": "Monophasé",
+          "three_phase": "Triphasé"
+        }
+      },
+      "charging_mode": {
+        "name": "Mode de charge",
+        "state": {
+          "solar_grid": "Solaire et réseau",
+          "only_solar": "Solaire uniquement"
+        }
+      },
+      "load_balancing_enabled_status": {
+        "name": "Équilibrage de charge",
+        "state": {
+          "disabled": "Désactivé",
+          "enabled": "Activé"
+        }
+      },
+      "solar_power_balancing_enabled_status": {
+        "name": "Équilibrage de la puissance solaire",
+        "state": {
+          "disabled": "Désactivé",
+          "enabled": "Activé"
+        }
+      },
+      "cp_acquisition_voltage": {
+        "name": "Tension du signal CP"
+      },
+      "cp_signal_status": {
+        "name": "Statut du signal CP",
+        "state": {
+          "A_12V": "A (12V)",
+          "B1_9V": "B1 (9V)",
+          "B2_9V": "B2 (9V)",
+          "C1_6V": "C1 (6V)",
+          "C2_6V": "C2 (6V)",
+          "error": "Erreur",
+          "D1_3V": "D1 (3V)",
+          "D2_3V": "D2 (3V)",
+          "E_0V": "E (0V)",
+          "F_minus_12V": "F (-12V)"
+        }
+      },
+      "relay_1_temperature": {
+        "name": "Température du relais 1"
+      },
+      "relay_2_temperature": {
+        "name": "Température du relais 2"
+      },
+      "boost_mode_status": {
+        "name": "Statut du mode Boost",
+        "state": {
+          "disabled": "Désactivé",
+          "enabled": "Activé"
+            }
+      },
+      "led_light_brightness_status": {
+        "name": "Luminosité de la LED"
+      },
+      "charging_status": {
+        "name": "Statut de charge",
+        "state": {
+          "idle": "Inactif",
+          "preparing": "Préparation",
+          "charging": "Charge en cours",
+          "charger_paused": "Pause chargeur",
+          "vehicle_paused": "Pause véhicule",
+          "charging_completed": "Charge terminée",
+          "reserving": "Réservation",
+          "disabled": "Désactivé",
+          "error": "Erreur"
+        }
+      },
+      "ocpp_connection_status": {
+        "name": "Connexion OCPP",
+        "state": {
+          "not_connected": "Non connecté",
+          "connecting": "Connexion",
+          "connected": "Connecté"
+        }
+      },
+      "mqtt_connection_status": {
+        "name": "Connexion MQTT",
+        "state": {
+          "not_connected": "Non connecté",
+          "connected": "Connecté"
+        }
       }
     },
     "select": {
@@ -269,6 +445,27 @@
           "power_on": "Marche",
           "power_off": "Arrêt"
         }
+      },
+      "charging_command": {
+        "name": "Commande de charge",
+        "state": {
+          "start_charging": "Démarrer la charge",
+          "stop_charging": "Arrêter la charge"
+        }
+      },
+      "boost_mode_control": {
+        "name": "Contrôle du mode Boost",
+        "state": {
+          "on": "Activer"
+        }
+      },
+      "charging_phases_setting": {
+        "name": "Configuration des phases de charge",
+        "state": {
+          "automatic": "Automatique",
+          "fixed_single_phase": "Fixer monophasé",
+          "fixed_three_phase": "Fixer triphasé"
+        }
       }
     },
     "number": {
@@ -289,6 +486,12 @@
       },
       "ac_active_power_percent": {
         "name": "Pourcentage d'ajustement de la puissance active"
+      },
+      "maximum_current_setting": {
+        "name": "Limite de courant maximum"
+      },
+      "set_timeout": {
+        "name": "Délai d'attente de charge"
       }
     },
     "switch": {
@@ -297,6 +500,17 @@
       },
       "power_switch": {
         "name": "Interrupteur de prise"
+      }
+    },
+    "button": {
+      "start_charging_btn": {
+        "name": "Démarrer la charge"
+      },
+      "stop_charging_btn": {
+        "name": "Arrêter la charge"
+      },
+      "boost_mode_control": {
+        "name": "Mode Boost"
       }
     }
   }

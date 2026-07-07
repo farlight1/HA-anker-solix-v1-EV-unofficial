@@ -233,6 +233,182 @@
           "disconnected": "Turn Off",
           "connected": "Turn On"
         }
+      },
+      "product_number": {
+        "name": "Product Number"
+      },
+      "device_hw_version": {
+        "name": "Hardware Version"
+      },
+      "rated_power": {
+        "name": "Rated Power"
+      },
+      "minimum_output_current": {
+        "name": "Minimum Output Current"
+      },
+      "maximum_output_current": {
+        "name": "Maximum Output Current"
+      },
+      "l1_n_voltage": {
+        "name": "L1-N Voltage"
+      },
+      "l2_n_voltage": {
+        "name": "L2-N Voltage"
+      },
+      "l3_n_voltage": {
+        "name": "L3-N Voltage"
+      },
+      "l1_l2_voltage": {
+        "name": "L1-L2 Voltage"
+      },
+      "l2_l3_voltage": {
+        "name": "L2-L3 Voltage"
+      },
+      "l3_l1_voltage": {
+        "name": "L3-L1 Voltage"
+      },
+      "l1_current": {
+        "name": "L1 Current"
+      },
+      "l2_current": {
+        "name": "L2 Current"
+      },
+      "l3_current": {
+        "name": "L3 Current"
+      },
+      "l1_active_power": {
+        "name": "L1 Active Power"
+      },
+      "l2_active_power": {
+        "name": "L2 Active Power"
+      },
+      "l3_active_power": {
+        "name": "L3 Active Power"
+      },
+      "total_charging_active_power": {
+        "name": "Total Charging Active Power"
+      },
+      "l1_reactive_power": {
+        "name": "L1 Reactive Power"
+      },
+      "l2_reactive_power": {
+        "name": "L2 Reactive Power"
+      },
+      "l3_reactive_power": {
+        "name": "L3 Reactive Power"
+      },
+      "l1_apparent_power": {
+        "name": "L1 Apparent Power"
+      },
+      "l2_apparent_power": {
+        "name": "L2 Apparent Power"
+      },
+      "l3_apparent_power": {
+        "name": "L3 Apparent Power"
+      },
+      "current_charging_session_duration": {
+        "name": "Current Session Duration"
+      },
+      "current_charging_capacity": {
+        "name": "Current Charging Capacity"
+      },
+      "pwm_enabled_status": {
+        "name": "PWM Status",
+        "state": {
+          "disabled": "Disabled",
+          "enabled": "Enabled"
+        }
+      },
+      "phase_operating_mode": {
+        "name": "Phase Operating Mode",
+        "state": {
+          "single_phase": "Single Phase",
+          "three_phase": "Three Phase"
+        }
+      },
+      "charging_mode": {
+        "name": "Charging Mode",
+        "state": {
+          "solar_grid": "Solar and Grid",
+          "only_solar": "Only Solar"
+        }
+      },
+      "load_balancing_enabled_status": {
+        "name": "Load Balancing",
+        "state": {
+          "disabled": "Disabled",
+          "enabled": "Enabled"
+        }
+      },
+      "solar_power_balancing_enabled_status": {
+        "name": "Solar Power Balancing",
+        "state": {
+          "disabled": "Disabled",
+          "enabled": "Enabled"
+        }
+      },
+      "cp_acquisition_voltage": {
+        "name": "CP Signal Voltage"
+      },
+      "cp_signal_status": {
+        "name": "CP Signal Status",
+        "state": {
+          "A_12V": "A (12V)",
+          "B1_9V": "B1 (9V)",
+          "B2_9V": "B2 (9V)",
+          "C1_6V": "C1 (6V)",
+          "C2_6V": "C2 (6V)",
+          "error": "Error",
+          "D1_3V": "D1 (3V)",
+          "D2_3V": "D2 (3V)",
+          "E_0V": "E (0V)",
+          "F_minus_12V": "F (-12V)"
+        }
+      },
+      "relay_1_temperature": {
+        "name": "Relay 1 Temperature"
+      },
+      "relay_2_temperature": {
+        "name": "Relay 2 Temperature"
+      },
+      "boost_mode_status": {
+        "name": "Boost Mode Status",
+        "state": {
+          "disabled": "Disabled",
+          "enabled": "Enabled"
+        }
+      },
+      "led_light_brightness_status": {
+        "name": "LED Brightness"
+      },
+      "charging_status": {
+        "name": "Charging Status",
+        "state": {
+          "idle": "Idle",
+          "preparing": "Preparing",
+          "charging": "Charging",
+          "charger_paused": "Charger Paused",
+          "vehicle_paused": "Vehicle Paused",
+          "charging_completed": "Charging Completed",
+          "reserving": "Reserving",
+          "disabled": "Disabled",
+          "error": "Error"
+        }
+      },
+      "ocpp_connection_status": {
+        "name": "OCPP Connection",
+        "state": {
+          "not_connected": "Not Connected",
+          "connecting": "Connecting",
+          "connected": "Connected"
+        }
+      },
+      "mqtt_connection_status": {
+        "name": "MQTT Connection",
+        "state": {
+          "not_connected": "Not Connected",
+          "connected": "Connected"
+        }
       }
     },
     "select": {
@@ -269,6 +445,27 @@
           "power_on": "Power On",
           "power_off": "Power Off"
         }
+      },
+      "charging_command": {
+        "name": "Charging Command",
+        "state": {
+          "start_charging": "Start Charging",
+          "stop_charging": "Stop Charging"
+        }
+      },
+      "boost_mode_control": {
+        "name": "Boost Mode",
+        "state": {
+          "on": "Activate"
+        }
+      },
+      "charging_phases_setting": {
+        "name": "Charging Phases Setting",
+        "state": {
+          "automatic": "Automatic",
+          "fixed_single_phase": "Fix Single Phase",
+          "fixed_three_phase": "Fix Three Phase"
+        }
       }
     },
     "number": {
@@ -289,6 +486,12 @@
       },
       "ac_active_power_percent": {
         "name": "Active Power Adjust Percentage"
+      },
+      "maximum_current_setting": {
+        "name": "Maximum Current Limit"
+      },
+      "set_timeout": {
+        "name": "Charging Timeout"
       }
     },
     "switch": {
@@ -297,6 +500,17 @@
       },
       "power_switch": {
         "name": "Socket Switch"
+      }
+    },
+    "button": {
+      "start_charging_btn": {
+        "name": "Start Charging"
+      },
+      "stop_charging_btn": {
+        "name": "Stop Charging"
+      },
+      "boost_mode_control": {
+        "name": "Boost Mode"
       }
     }
   }

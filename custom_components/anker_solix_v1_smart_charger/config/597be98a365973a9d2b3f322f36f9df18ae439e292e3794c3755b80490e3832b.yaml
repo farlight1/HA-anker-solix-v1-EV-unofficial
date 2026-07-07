@@ -1,0 +1,709 @@
+# =============================================================================
+# Anker Solix V1 Smart EV Charger Configuration File
+# =============================================================================
+
+# Product information
+product_info:
+  default_name: "Anker SOLIX V1 Smart EV Charger"
+  sn_register_key: "device_sn"
+  model_register_key: "device_model"
+  product_code_mapping:
+    "A5191": "Anker SOLIX V1 Smart EV Charger"
+
+# Batch read ranges with register type specification
+batch_read_ranges:
+  input:
+    - 20000-20100  # Lee todo el bloque de sensores de golpe (Modbus soporta hasta 125 regs/petición)
+  holding:
+    - 21000-21005  # Bloque de registros de control
+
+# =======================================================================
+# Read Quantities Configuration (Sensor Type)
+# =======================================================================
+read_quantities:
+  # Intrinsic Information
+  product_number:
+    translation_key: "product_number"
+    address: 20000
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  device_model:
+    translation_key: "device_model"
+    address: 20001
+    data_type: "STRING"
+    unit: "/"
+    gain: 1
+    count: 10
+    internal: true
+
+  device_sn:
+    translation_key: "device_sn"
+    address: 20011
+    data_type: "STRING"
+    unit: "/"
+    gain: 1
+    count: 12
+    internal: true
+
+  device_sw_version:
+    translation_key: "device_sw_version"
+    address: 20023
+    data_type: "STRING"
+    unit: "/"
+    gain: 1
+    count: 6
+    internal: true
+
+  device_hw_version:
+    translation_key: "device_hw_version"
+    address: 20029
+    data_type: "STRING"
+    unit: "/"
+    gain: 1
+    count: 6
+    internal: true
+
+  rated_power:
+    translation_key: "rated_power"
+    address: 20035
+    data_type: "INT32"
+    unit: "W"
+    gain: 1
+    count: 2
+    entity_category: "diagnostic"
+
+  minimum_output_current:
+    translation_key: "minimum_output_current"
+    address: 20037
+    data_type: "INT32"
+    unit: "A" # El PDF dice 'W' pero es un error tipográfico, es corriente.
+    gain: 1
+    count: 2
+    internal: true
+
+  maximum_output_current:
+    translation_key: "maximum_output_current"
+    address: 20039
+    data_type: "INT32"
+    unit: "A" # El PDF dice 'KVA' o 'W' pero lógicamente son Amperios
+    gain: 1
+    count: 2
+    internal: true
+
+  # Alarm Information
+  alarm_information_1:
+    translation_key: "alarm_information_1"
+    address: 20041
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:alert-outline"
+    internal: true # Recomendado ocultarlos hasta que se decodifiquen los bits
+
+  alarm_information_2:
+    translation_key: "alarm_information_2"
+    address: 20042
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_3:
+    translation_key: "alarm_information_3"
+    address: 20043
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_4:
+    translation_key: "alarm_information_4"
+    address: 20044
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_5:
+    translation_key: "alarm_information_5"
+    address: 20045
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_6:
+    translation_key: "alarm_information_6"
+    address: 20046
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_7:
+    translation_key: "alarm_information_7"
+    address: 20047
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_8:
+    translation_key: "alarm_information_8"
+    address: 20048
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_9:
+    translation_key: "alarm_information_9"
+    address: 20049
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_10:
+    translation_key: "alarm_information_10"
+    address: 20050
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_11:
+    translation_key: "alarm_information_11"
+    address: 20051
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  alarm_information_12:
+    translation_key: "alarm_information_12"
+    address: 20052
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true
+
+  # AC Voltages
+  l1_n_voltage:
+    translation_key: "l1_n_voltage"
+    address: 20053
+    data_type: "UINT16"
+    unit: "V"
+    gain: 10
+    count: 1
+    icon: "mdi:sine-wave"
+
+  l2_n_voltage:
+    translation_key: "l2_n_voltage"
+    address: 20054
+    data_type: "UINT16"
+    unit: "V"
+    gain: 10
+    count: 1
+    icon: "mdi:sine-wave"
+
+  l3_n_voltage:
+    translation_key: "l3_n_voltage"
+    address: 20055
+    data_type: "UINT16"
+    unit: "V"
+    gain: 10
+    count: 1
+    icon: "mdi:sine-wave"
+
+  l1_l2_voltage:
+    translation_key: "l1_l2_voltage"
+    address: 20056
+    data_type: "UINT16"
+    unit: "V"
+    gain: 10
+    count: 1
+    icon: "mdi:sine-wave"
+
+  l2_l3_voltage:
+    translation_key: "l2_l3_voltage"
+    address: 20057
+    data_type: "UINT16"
+    unit: "V"
+    gain: 10
+    count: 1
+    icon: "mdi:sine-wave"
+
+  l3_l1_voltage:
+    translation_key: "l3_l1_voltage"
+    address: 20058
+    data_type: "UINT16"
+    unit: "V"
+    gain: 10
+    count: 1
+    icon: "mdi:sine-wave"
+
+  # AC Currents
+  l1_current:
+    translation_key: "l1_current"
+    address: 20059
+    data_type: "UINT16"
+    unit: "A"
+    gain: 10
+    count: 1
+    icon: "mdi:current-ac"
+
+  l2_current:
+    translation_key: "l2_current"
+    address: 20060
+    data_type: "UINT16"
+    unit: "A"
+    gain: 10
+    count: 1
+    icon: "mdi:current-ac"
+
+  l3_current:
+    translation_key: "l3_current"
+    address: 20061
+    data_type: "UINT16"
+    unit: "A"
+    gain: 10
+    count: 1
+    icon: "mdi:current-ac"
+
+  # AC Powers
+  l1_active_power:
+    translation_key: "l1_active_power"
+    address: 20062
+    data_type: "UINT32"
+    unit: "W"
+    gain: 1
+    count: 2
+    icon: "mdi:lightning-bolt"
+
+  l2_active_power:
+    translation_key: "l2_active_power"
+    address: 20064
+    data_type: "UINT32"
+    unit: "W"
+    gain: 1
+    count: 2
+    icon: "mdi:lightning-bolt"
+
+  l3_active_power:
+    translation_key: "l3_active_power"
+    address: 20066
+    data_type: "UINT32"
+    unit: "W"
+    gain: 1
+    count: 2
+    icon: "mdi:lightning-bolt"
+
+  total_charging_active_power:
+    translation_key: "total_charging_active_power"
+    address: 20068
+    data_type: "UINT32"
+    unit: "W"
+    gain: 1
+    count: 2
+    icon: "mdi:ev-station"
+
+  l1_reactive_power:
+    translation_key: "l1_reactive_power"
+    address: 20070
+    data_type: "UINT32"
+    unit: "var"
+    gain: 1
+    count: 2
+    icon: "mdi:lightning-bolt-outline"
+
+  l2_reactive_power:
+    translation_key: "l2_reactive_power"
+    address: 20072
+    data_type: "UINT32"
+    unit: "var"
+    gain: 1
+    count: 2
+    icon: "mdi:lightning-bolt-outline"
+
+  l3_reactive_power:
+    translation_key: "l3_reactive_power"
+    address: 20074
+    data_type: "UINT32"
+    unit: "var"
+    gain: 1
+    count: 2
+    icon: "mdi:lightning-bolt-outline"
+
+  l1_apparent_power:
+    translation_key: "l1_apparent_power"
+    address: 20076
+    data_type: "UINT32"
+    unit: "VA"
+    gain: 1
+    count: 2
+    icon: "mdi:flash-outline"
+
+  l2_apparent_power:
+    translation_key: "l2_apparent_power"
+    address: 20078
+    data_type: "UINT32"
+    unit: "VA"
+    gain: 1
+    count: 2
+    icon: "mdi:flash-outline"
+
+  l3_apparent_power:
+    translation_key: "l3_apparent_power"
+    address: 20080
+    data_type: "UINT32"
+    unit: "VA"
+    gain: 1
+    count: 2
+    icon: "mdi:flash-outline"
+
+  # Charging Session Details
+  current_charging_session_duration:
+    translation_key: "current_charging_session_duration"
+    address: 20082
+    data_type: "UINT32"
+    unit: "s"
+    gain: 1
+    count: 2
+    icon: "mdi:timer-play"
+
+  current_charging_capacity:
+    translation_key: "current_charging_capacity"
+    address: 20084
+    data_type: "UINT32"
+    unit: "Wh"
+    gain: 1
+    count: 2
+    device_class: "energy"
+    icon: "mdi:lightning-bolt-circle"
+
+  # Status Indicators & Enums
+  pwm_enabled_status:
+    translation_key: "pwm_enabled_status"
+    address: 20086
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:pulse"
+    value_mapping:
+      0: "disabled"
+      1: "enabled"
+    entity_category: "diagnostic"
+
+#FW update 1.0.6.1 no longer provide "phase operating mode" or values changes
+  # phase_operating_mode:
+    # translation_key: "phase_operating_mode"
+    # address: 20087
+    # data_type: "UINT16"
+    # unit: "/"
+    # gain: 1
+    # count: 1
+    # icon: "mdi:star-three-points"
+    # value_mapping:
+      # 1: "single_phase"
+      # 3: "three_phase"
+    # entity_category: "diagnostic"
+
+  charging_mode:
+    translation_key: "charging_mode"
+    address: 20088
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:solar-power"
+    value_mapping:
+      0: "solar_grid"
+      1: "only_solar"
+    entity_category: "diagnostic"
+
+  load_balancing_enabled_status:
+    translation_key: "load_balancing_enabled_status"
+    address: 20089
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:scale-balance"
+    value_mapping:
+      0: "disabled"
+      1: "enabled"
+    entity_category: "diagnostic"
+
+  solar_power_balancing_enabled_status:
+    translation_key: "solar_power_balancing_enabled_status"
+    address: 20090
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:solar-power-variant"
+    value_mapping:
+      0: "disabled"
+      1: "enabled"
+    entity_category: "diagnostic"
+
+  cp_acquisition_voltage:
+    translation_key: "cp_acquisition_voltage"
+    address: 20091
+    data_type: "UINT16"
+    unit: "V"
+    gain: 1000
+    count: 1
+    icon: "mdi:sine-wave"
+
+  cp_signal_status:
+    translation_key: "cp_signal_status"
+    address: 20092
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:signal"
+    value_mapping:
+      0: "A_12V"
+      3: "B1_9V"
+      4: "B2_9V"
+      5: "C1_6V"
+      6: "C2_6V"
+      7: "error"
+      8: "D1_3V"
+      9: "D2_3V"
+      10: "E_0V"
+      11: "F_minus_12V"
+    entity_category: "diagnostic"
+
+  relay_1_temperature:
+    translation_key: "relay_1_temperature"
+    address: 20093
+    data_type: "INT16"
+    unit: "°C"
+    gain: 1
+    count: 1
+    icon: "mdi:thermometer"
+    internal: true
+
+  relay_2_temperature:
+    translation_key: "relay_2_temperature"
+    address: 20094
+    data_type: "INT16"
+    unit: "°C"
+    gain: 10
+    count: 1
+    icon: "mdi:thermometer"
+
+  boost_mode_status:
+    translation_key: "boost_mode_status"
+    address: 20095
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:rocket-launch"
+    value_mapping:
+      0: "disabled"
+      1: "enabled"
+    entity_category: "diagnostic"
+
+  led_light_brightness_status:
+    translation_key: "led_light_brightness_status"
+    address: 20096
+    data_type: "UINT16"
+    unit: "%"
+    gain: 1
+    count: 1
+    device_class: None
+    icon: "mdi:led-on"
+
+  charging_status:
+    translation_key: "charging_status"
+    address: 20097
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:ev-station"
+    value_mapping:
+      0: "idle"
+      1: "preparing"
+      2: "charging"
+      3: "charger_paused"
+      4: "vehicle_paused"
+      5: "charging_completed"
+      6: "reserving"
+      7: "disabled"
+      8: "error"
+
+  reserved_for_future_use_20098:
+    translation_key: "reserved_for_future_use"
+    address: 20098
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    internal: true # Registro 20098 añadido y oculto
+
+  ocpp_connection_status:
+    translation_key: "ocpp_connection_status"
+    address: 20099
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:cloud-sync"
+    value_mapping:
+      0: "not_connected"
+      1: "connected"
+      2: "connecting"
+    entity_category: "diagnostic"
+
+  mqtt_connection_status:
+    translation_key: "mqtt_connection_status"
+    address: 20100
+    data_type: "UINT16"
+    unit: "/"
+    gain: 1
+    count: 1
+    icon: "mdi:network"
+    value_mapping:
+      0: "not_connected"
+      1: "connected"
+    entity_category: "diagnostic"
+
+# =======================================================================
+# Write Quantities Configuration (Control / Selector Type)
+# =======================================================================
+write_quantities:
+  enumeration_selection:
+     charging_command:
+       translation_key: "charging_command"
+       address: 21000
+       data_type: "UINT16"
+       unit: "/"
+       gain: 1
+       count: 1
+       icon: "mdi:play-pause"
+       control_type: "select"
+       options:
+         "1": "start_charging"
+         "2": "stop_charging"
+
+    # boost_mode:
+      # translation_key: "boost_mode_control"
+      # address: 21002
+      # data_type: "UINT16"
+      # unit: "/"
+      # gain: 1
+      # count: 1
+      # icon: "mdi:rocket-launch"
+      # control_type: "select"
+      # options:
+        # "1": "on"
+
+    # charging_phases_setting:
+      # translation_key: "charging_phases_setting"
+      # address: 21005
+      # data_type: "UINT16"
+      # unit: "/"
+      # gain: 1
+      # count: 1
+      # icon: "mdi:phase-three"
+      # control_type: "select"
+      # options:
+        # "0": "automatic"
+        # "1": "fixed_single_phase"
+        # "2": "fixed_three_phase"
+
+# =======================================================================
+# Number Input Controls (Numeric Write Controls)
+# =======================================================================
+control_items:
+  start_charging_btn:
+    translation_key: "start_charging_btn"
+    address: 21000
+    data_type: "UINT16"
+    display_type: "button"
+    data_type_category: "control"
+    write_value: 1
+    icon: "mdi:ev-plug-type2"
+
+  stop_charging_btn:
+    translation_key: "stop_charging_btn"
+    address: 21000
+    data_type: "UINT16"
+    display_type: "button"      # <--- Llama al nuevo button.py
+    data_type_category: "control"
+    write_value: 2              # <--- Valor a enviar por Modbus
+    icon: "mdi:close-octagon"
+    
+  boost_mode:
+    translation_key: "boost_mode_control"
+    address: 21002
+    data_type: "UINT16"
+    display_type: "button"
+    data_type_category: "control"
+    write_value: 1
+    icon: "mdi:rocket-launch"
+      
+  maximum_current_setting:
+    translation_key: "maximum_current_setting"
+    address: 21001
+    data_type: "UINT16"
+    unit: "A" # El PDF tiene la errata de poner W aquí
+    gain: 10
+    count: 1
+    icon: "mdi:current-ac"
+    data_type_category: "control"
+    display_type: "input"
+    min_value: 6
+    max_value: 32
+    step: 1
+
+  set_timeout:
+    translation_key: "set_timeout"
+    address: 21003
+    data_type: "UINT16"
+    unit: "s" # El PDF tiene la errata de poner A aquí
+    gain: 1
+    count: 1
+    icon: "mdi:timer-outline"
+    data_type_category: "control"
+    display_type: "input"
+    min_value: 5
+    max_value: 86400
+    step: 1
+
+  # reserved_control_21004:
+    # translation_key: "reserved_control"
+    # address: 21004
+    # data_type: "UINT16"
+    # unit: "/"
+    # gain: 10
+    # count: 1
+    # data_type_category: "control"
+    # display_type: "input"
+    # min_value: 0
+    # max_value: 100
+    # internal: true # Registro 21004 reservado, pero mapeado y oculto

@@ -233,6 +233,182 @@
           "disconnected": "关闭",
           "connected": "开启"
         }
+      },
+      "product_number": {
+        "name": "产品货号"
+      },
+      "device_hw_version": {
+        "name": "硬件版本"
+      },
+      "rated_power": {
+        "name": "额定功率"
+      },
+      "minimum_output_current": {
+        "name": "最小输出电流"
+      },
+      "maximum_output_current": {
+        "name": "最大输出电流"
+      },
+      "l1_n_voltage": {
+        "name": "L1-N 电压"
+      },
+      "l2_n_voltage": {
+        "name": "L2-N 电压"
+      },
+      "l3_n_voltage": {
+        "name": "L3-N 电压"
+      },
+      "l1_l2_voltage": {
+        "name": "L1-L2 电压"
+      },
+      "l2_l3_voltage": {
+        "name": "L2-L3 电压"
+      },
+      "l3_l1_voltage": {
+        "name": "L3-L1 电压"
+      },
+      "l1_current": {
+        "name": "L1 电流"
+      },
+      "l2_current": {
+        "name": "L2 电流"
+      },
+      "l3_current": {
+        "name": "L3 电流"
+      },
+      "l1_active_power": {
+        "name": "L1 有功功率"
+      },
+      "l2_active_power": {
+        "name": "L2 有功功率"
+      },
+      "l3_active_power": {
+        "name": "L3 有功功率"
+      },
+      "total_charging_active_power": {
+        "name": "总充电有功功率"
+      },
+      "l1_reactive_power": {
+        "name": "L1 无功功率"
+      },
+      "l2_reactive_power": {
+        "name": "L2 无功功率"
+      },
+      "l3_reactive_power": {
+        "name": "L3 无功功率"
+      },
+      "l1_apparent_power": {
+        "name": "L1 视在功率"
+      },
+      "l2_apparent_power": {
+        "name": "L2 视在功率"
+      },
+      "l3_apparent_power": {
+        "name": "L3 视在功率"
+      },
+      "current_charging_session_duration": {
+        "name": "当前充电会话时长"
+      },
+      "current_charging_capacity": {
+        "name": "当前会话充电量"
+      },
+      "pwm_enabled_status": {
+        "name": "PWM使能状态",
+        "state": {
+          "disabled": "已禁用",
+          "enabled": "已启用"
+        }
+      },
+      "phase_operating_mode": {
+        "name": "相位运行模式",
+        "state": {
+          "single_phase": "单相",
+          "three_phase": "三相"
+        }
+      },
+      "charging_mode": {
+        "name": "充电模式",
+        "state": {
+          "solar_grid": "光伏与电网",
+          "only_solar": "仅光伏"
+        }
+      },
+      "load_balancing_enabled_status": {
+        "name": "负载均衡状态",
+        "state": {
+          "disabled": "已禁用",
+          "enabled": "已启用"
+        }
+      },
+      "solar_power_balancing_enabled_status": {
+        "name": "光伏功率平衡状态",
+        "state": {
+          "disabled": "已禁用",
+          "enabled": "已启用"
+        }
+      },
+      "cp_acquisition_voltage": {
+        "name": "CP 信号采样电压"
+      },
+      "cp_signal_status": {
+        "name": "CP 信号状态",
+        "state": {
+          "A_12V": "A (12V)",
+          "B1_9V": "B1 (9V)",
+          "B2_9V": "B2 (9V)",
+          "C1_6V": "C1 (6V)",
+          "C2_6V": "C2 (6V)",
+          "error": "错误",
+          "D1_3V": "D1 (3V)",
+          "D2_3V": "D2 (3V)",
+          "E_0V": "E (0V)",
+          "F_minus_12V": "F (-12V)"
+        }
+      },
+      "relay_1_temperature": {
+        "name": "继电器 1 温度"
+      },
+      "relay_2_temperature": {
+        "name": "继电器 2 温度"
+      },
+      "boost_mode_status": {
+        "name": "Boost 模式状态",
+        "state": {
+          "disabled": "已禁用",
+          "enabled": "已启用"
+        }
+      },
+      "led_light_brightness_status": {
+        "name": "LED 指示灯亮度"
+      },
+      "charging_status": {
+        "name": "充电状态",
+        "state": {
+          "idle": "空闲",
+          "preparing": "准备中",
+          "charging": "充电中",
+          "charger_paused": "充电桩暂停",
+          "vehicle_paused": "车辆暂停",
+          "charging_completed": "充电完成",
+          "reserving": "预约中",
+          "disabled": "已禁用",
+          "error": "错误"
+        }
+      },
+      "ocpp_connection_status": {
+        "name": "OCPP 连接状态",
+        "state": {
+          "not_connected": "未连接",
+          "connecting": "连接中",
+          "connected": "已连接"
+        }
+      },
+      "mqtt_connection_status": {
+        "name": "MQTT 连接状态",
+        "state": {
+          "not_connected": "未连接",
+          "connected": "已连接"
+        }
       }
     },
     "select": {
@@ -269,6 +445,27 @@
           "power_on": "开机",
           "power_off": "关机"
         }
+      },
+      "charging_command": {
+        "name": "充电指令",
+        "state": {
+          "start_charging": "开始充电",
+          "stop_charging": "停止充电"
+        }
+      },
+      "boost_mode_control": {
+        "name": "Boost 模式控制",
+        "state": {
+          "on": "开启"
+        }
+      },
+      "charging_phases_setting": {
+        "name": "充电相位设置",
+        "state": {
+          "automatic": "自动",
+          "fixed_single_phase": "固定单相",
+          "fixed_three_phase": "固定三相"
+        }
       }
     },
     "number": {
@@ -289,6 +486,12 @@
       },
       "ac_active_power_percent": {
         "name": "有功功率调节百分比"
+      },
+      "maximum_current_setting": {
+        "name": "最大电流设置"
+      },
+      "set_timeout": {
+        "name": "充电超时设置"
       }
     },
     "switch": {
@@ -297,6 +500,17 @@
       },
       "power_switch": {
         "name": "插座开关"
+      }
+    },
+    "button": {
+      "start_charging_btn": {
+        "name": "开始充电"
+      },
+      "stop_charging_btn": {
+        "name": "停止充电"
+      },
+      "boost_mode_control": {
+        "name": "Boost 模式"
       }
     }
   }

@@ -76,7 +76,9 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         self._latest_data: dict[str, Any] = {}
         # Serialize all modbus I/O
         self._io_lock = asyncio.Lock()
+        self._config_lock = asyncio.Lock() # se añade un bloquedo para la lectura asincrona y evitar multiples llamadas
         self._selected_config_file: str | None = None
+        self._cached_pn_result: tuple[str, str, str] | None = None #cacheamos PN para evitar multiples llamadas modbus
         self._ever_connected: bool = False
         # Persistent flag: True once the initial auto-mode-set has been
         # successfully delivered (or device was already in target mode).
@@ -607,6 +609,7 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         Log once at INFO when device becomes unavailable, then stay silent.
         Log once at INFO when device comes back online.
         """
+        self._cached_pn_result = None # Limpiamos cache si la conexion falla, para llamar de nuevo al PN
         current_time = time.time()
         self._consecutive_failures += 1
         self._last_failure_time = current_time
@@ -653,6 +656,11 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         Returns:
             tuple: (pn_hash, raw_pn, raw_registers_hex) or ("", "", "") on failure
         """
+        # --- NUEVO: Devolver el resultado cacheado si ya existe ---
+        if self._cached_pn_result is not None:
+            self.logger.debug("Returning cached device PN: %s", self._cached_pn_result[0])
+            return self._cached_pn_result
+        # ---------------------------------------------------------
         try:
             async with self._io_lock:
                 self.logger.debug("Attempting to read device PN")
@@ -665,6 +673,9 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                         pn_hash,
                         raw_hex,
                     )
+                    # --- NUEVO: Guardar el resultado en caché si es válido ---
+                    self._cached_pn_result = result
+                    # ---------------------------------------------------------
                 else:
                     self.logger.warning(
                         "Failed to read device PN - Raw: '%s', Registers: [%s]",
@@ -680,6 +691,11 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
 
     async def _get_config_file_path(self) -> str:
         """Get configuration file path based on device PN."""
+        # --- NUEVO: Comprobar la caché primero ---
+        if self._selected_config_file:
+            self.logger.debug("Using cached config file path: %s", self._selected_config_file)
+            return self._selected_config_file
+        # -----------------------------------------
         pn_hash, raw_pn, raw_hex = await self._read_device_pn()
         if not pn_hash:
             self.logger.error(
@@ -702,6 +718,9 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
 
         if config_path.exists():
             self.logger.info("Found device-specific config: %s", config_file)
+            # --- NUEVO: Guardar en la caché al encontrarlo ---
+            self._selected_config_file = config_file
+            # -------------------------------------------------
             return config_file
         else:
             self.logger.error(
@@ -782,10 +801,22 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                         continue
 
                     # Connected: ensure config
+                    # Comprobar si la ruta es validate
+                    self.logger.info("[DEBUG] Validating config cache. Status: %s, File known: %s", 
+                        self._is_config_cache_valid(), 
+                        bool(self._selected_config_file))
+
                     if not self._is_config_cache_valid():
                         # Dynamic configuration file based on device PN
                         await asyncio.sleep(0.7)
-                        config_file = await self._get_config_file_path()
+                        #config_file = await self._get_config_file_path()
+                        # --- SOLUCIÓN: Usar la ruta ya conocida si existe para evitar spam de PN ---
+                        if self._selected_config_file:
+                            config_file = self._selected_config_file
+                            self.logger.info("[bg] Using cached config file path: %s", config_file)
+                        else:
+                            config_file = await self._get_config_file_path()
+                        # ---------------------------------------------------------
                         if not config_file:
                             self._handle_connection_failure(
                                 "[bg] Failed to determine config file path"
@@ -876,6 +907,14 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
 
                     # Update device registry (async, non-blocking)
                     try:
+                        # Extraemos los datos del Modbus (ahora internos) hacia la info del dispositivo
+                        if "device_sw_version" in data:
+                            self.device_info["sw_version"] = data["device_sw_version"]
+                        if "device_hw_version" in data:
+                            self.device_info["hw_version"] = data["device_hw_version"]
+                        if "device_sn" in data:
+                            self.device_info["serial_number"] = data["device_sn"]
+
                         if (
                             self.device_info.get("model")
                             and self.device_info.get("model") != "--"
@@ -887,15 +926,16 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
                             if device:
                                 dev_reg.async_update_device(
                                     device_id=device.id,
-                                    manufacturer=self.device_info.get(
-                                        "manufacturer", "Anker"
-                                    ),
+                                    manufacturer=self.device_info.get("manufacturer", "Anker"),
                                     model=self.device_info.get("model"),
                                     name=self.device_info.get("name"),
+                                    sw_version=self.device_info.get("sw_version"),
+                                    hw_version=self.device_info.get("hw_version"),
+                                    serial_number=self.device_info.get("serial_number"),
                                 )
                                 self.logger.info(
-                                    "Device registry updated with model: %s",
-                                    self.device_info.get("model"),
+                                    "Device registry updated with full device info for: %s",
+                                    self.device_info.get("name"),
                                 )
                     except Exception as e:
                         self.logger.debug("Failed to update device registry: %s", e)
@@ -1060,8 +1100,27 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
         """Ensure device configuration is loaded synchronously for platform setup.
         Returns data_points dict if ready, otherwise empty dict.
         """
-        if self._is_config_cache_valid():
-            return self._device_config_cache  # type: ignore[return-value]
+        # --- NUEVO: Usamos el cerrojo para evitar condiciones de carrera ---
+        async with self._config_lock:
+            # Comprobación inicial rápida
+            if self._is_config_cache_valid():
+                return self._device_config_cache  # type: ignore[return-value]
+
+            # Si ya tenemos el archivo, lo intentamos cargar directo
+            if self._selected_config_file:
+                try:
+                    cfg = await self.device_config.load_device_config_by_file_async(self._selected_config_file)
+                    if cfg and isinstance(cfg, dict):
+                        self._full_config_cache = cfg
+                        data_points, batch_ranges = parse_device_configuration(cfg)
+                        if data_points:
+                            self._device_config_cache = data_points
+                            self._batch_ranges_cache = batch_ranges
+                            self._config_cache_valid = True
+                            return data_points
+                except Exception:
+                    pass # Fallback al proceso completo si falla
+        # -------------------------------------------------------------------
 
         # Attempt to connect using device-specific modbus manager, then load device-specific config file
         try:
@@ -1073,9 +1132,13 @@ class AnkerSolixOfficialCoordinator(DataUpdateCoordinator):
 
             # small stabilization delay
             await asyncio.sleep(0.5)
+            
+            # Como _get_config_file_path ya tiene caché, esto es seguro
             config_file = await self._get_config_file_path()
+            
             if not config_file:
                 return {}
+            
             self._selected_config_file = config_file
             cfg = await self.device_config.load_device_config_by_file_async(config_file)
             if not (cfg and isinstance(cfg, dict)):

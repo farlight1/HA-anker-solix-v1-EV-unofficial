@@ -1,0 +1,19 @@
+{
+  "domain": "anker_solix_v1_EV_charger",
+  "name": "Anker SOLIX V1 Smart EV Charger",
+  "after_dependencies": [],
+  "codeowners": [
+    "@farlight1"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/farlight1/HA-anker-solix-v1-EV-unofficial",
+  "integration_type": "hub",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/farlight1/HA-anker-solix-v1-EV-unofficial/issues",
+  "requirements": [
+    "pymodbus>=3.0.0,<4.0.0",
+    "PyYAML>=5.4.0"
+  ],
+  "version": "1.0.0"
+}

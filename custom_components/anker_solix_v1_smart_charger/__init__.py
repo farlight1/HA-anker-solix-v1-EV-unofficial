@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_wait_for_first_data()
 
     # Set up platforms
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "select", "number", "switch"])
+    await hass.config_entries.async_forward_entry_setups(entry, ["sensor", "select", "number", "switch", "button"])
 
     _LOGGER.info("Successfully set up Anker Solix device at %s", ip_address)
     return True
@@ -40,7 +40,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.info("Unloading Anker Solix integration for device at %s", ip_address)
 
     # Unload platforms
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select", "number", "switch"])
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, ["sensor", "select", "number", "switch", "button"])
 
     if unload_ok:
         # Close coordinator
