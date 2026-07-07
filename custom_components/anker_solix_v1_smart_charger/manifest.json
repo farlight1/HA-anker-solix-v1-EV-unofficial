@@ -1,5 +1,5 @@
 {
-  "domain": "anker_solix_v1_EV_charger",
+  "domain": "anker_solix_v1_smart_charger",
   "name": "Anker SOLIX V1 Smart EV Charger",
   "after_dependencies": [],
   "codeowners": [
