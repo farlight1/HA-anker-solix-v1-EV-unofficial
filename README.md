@@ -21,7 +21,7 @@ This integration is a fork of the official [Anker Solix Official Integration for
 
 ## Supported Devices
 
-| Anker SOLIX V1 Smart EV Charger
+- Anker SOLIX V1 Smart EV Charger
 
 ## Prerequisites: Enable Modbus TCP in Anker App
 
@@ -63,7 +63,7 @@ Before setting up this integration, you must enable Modbus TCP on your device th
 
 1. Go to **Settings** > **Devices & Services**
 2. Click **Add Integration**
-3. Search for **Anker Solix**
+3. Search for **Anker Solix V1 Smart EV Charger**
 4. Enter your device's local IP address (Modbus TCP port 502 is used by default)
 5. The integration auto-detects the device model and loads the matching configuration
 
@@ -80,9 +80,7 @@ Check that: the device is powered on and on the same network, the IP address is 
 
 **The Communication Settings option is greyed out and cannot be tapped?**
 Possible reasons:
-1. The device has been added to a power station — you need to configure it from the power station settings page instead
-2. The device is currently offline — wait for the device to come back online
-3. The device firmware does not support this feature — check for firmware updates in the Anker App
+The device is currently offline — wait for the device to come back online
 
 **Will Home Assistant control conflict with Anker App control?**
 - When "Third-Party Controlled" mode is enabled, the device will execute commands from Home Assistant
@@ -90,7 +88,7 @@ Possible reasons:
 - It is recommended to clearly define your control method to avoid frequent switching
 
 **Can I control multiple devices?**
-Yes. You can add multiple Anker devices in Home Assistant, each configured and controlled independently.
+Yes. You can add multiple Anker chargers in Home Assistant, each configured and controlled independently.
 
 **Can I use the Anker App and Home Assistant at the same time?**
 - Yes, both can be used simultaneously, but be aware of control priority
@@ -130,7 +128,6 @@ Yes. You can add multiple Anker devices in Home Assistant, each configured and c
 - Check if the network connection is normal
 - Confirm the Modbus TCP toggle is enabled in the Anker App
 - Restart the Home Assistant integration
-- Check if the device has entered standby mode
 - Check the Home Assistant logs for communication errors
 
 ## License
