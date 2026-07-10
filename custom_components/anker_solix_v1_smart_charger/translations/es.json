@@ -353,16 +353,16 @@
       "cp_signal_status": {
         "name": "Estado de la Señal CP",
         "state": {
-          "A_12V": "A (12V)",
-          "B1_9V": "B1 (9V)",
-          "B2_9V": "B2 (9V)",
-          "C1_6V": "C1 (6V)",
-          "C2_6V": "C2 (6V)",
-          "error": "Error",
-          "D1_3V": "D1 (3V)",
-          "D2_3V": "D2 (3V)",
-          "E_0V": "E (0V)",
-          "F_minus_12V": "F (-12V)"
+          "A_12V": "Desconectado",
+          "B1_9V": "Conectado, en espera",
+          "B2_9V": "Conectado, en pausa",
+          "C1_6V": "Listo para cargar",
+          "C2_6V": "Cargando",
+          "error": "¡Error!",
+          "D1_3V": "Listo, requiere ventilación",
+          "D2_3V": "Cargando (ventilando)",
+          "E_0V": "Cortocircuito/Sin energía",
+          "F_minus_12V": "Fallo del cargador (EVSE)"
         }
       },
       "relay_1_temperature": {

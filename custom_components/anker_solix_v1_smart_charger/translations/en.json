@@ -353,16 +353,16 @@
       "cp_signal_status": {
         "name": "CP Signal Status",
         "state": {
-          "A_12V": "A (12V)",
-          "B1_9V": "B1 (9V)",
-          "B2_9V": "B2 (9V)",
-          "C1_6V": "C1 (6V)",
-          "C2_6V": "C2 (6V)",
-          "error": "Error",
-          "D1_3V": "D1 (3V)",
-          "D2_3V": "D2 (3V)",
-          "E_0V": "E (0V)",
-          "F_minus_12V": "F (-12V)"
+          "A_12V": "Disconnected",
+          "B1_9V": "Connected, Standby",
+          "B2_9V": "Connected, Paused",
+          "C1_6V": "Ready to Charge",
+          "C2_6V": "Charging",
+          "error": "Error!",
+          "D1_3V": "Ready, Ventilation Required",
+          "D2_3V": "Charging (with Ventilation)",
+          "E_0V": "Short Circuit / No Power",
+          "F_minus_12V": "EVSE Fault"
         }
       },
       "relay_1_temperature": {

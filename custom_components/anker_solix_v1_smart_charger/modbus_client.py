@@ -525,14 +525,14 @@ class AnkerSolixModbusClient:
         else:
             # Normal response
             if func_code == 0x06:
-                self._logger.warning(
+                self._logger.info(
                     "RX OK | [FC=0x%02X(WriteSingleReg)] addr=%d(0x%04X) write success",
                     func_code,
                     address,
                     address,
                 )
             elif func_code == 0x10:
-                self._logger.warning(
+                self._logger.info(
                     "RX OK | [FC=0x%02X(WriteMultiReg)] addr=%d(0x%04X), count=%d write success",
                     func_code,
                     address,
@@ -553,7 +553,7 @@ class AnkerSolixModbusClient:
         except Exception:
             pass
 
-        self._logger.warning(
+        self._logger.info(
             "Write register PRE-CHECK | address=%d (0x%04X), value=%s, data_type=%s, is_connected=%s, socket_open=%s",
             address,
             address,
@@ -565,7 +565,7 @@ class AnkerSolixModbusClient:
 
         if not is_connected:
             reason = f"Device not connected (is_connected={is_connected}, socket_open={socket_open})"
-            self._logger.warning(
+            self._logger.error(
                 "Unable to write register - not connected | "
                 "[%s] device=%s:%d, address=%d (0x%04X), value=%s, data_type=%s, "
                 "is_connected=%s, socket_open=%s",
@@ -590,7 +590,7 @@ class AnkerSolixModbusClient:
                 raw_registers = [int(value) & 0xFFFF]
                 func_code = 0x06
                 tx_frame = self._format_modbus_frame(func_code, address, raw_registers)
-                self._logger.warning("TX | %s", tx_frame)
+                self._logger.info("TX | %s", tx_frame)
                 result = self.client.write_register(address=address, value=int(value))
             elif data_type == "INT32":
                 int_value = int(value)
@@ -600,7 +600,7 @@ class AnkerSolixModbusClient:
                 raw_registers = [high, low]
                 func_code = 0x10
                 tx_frame = self._format_modbus_frame(func_code, address, raw_registers)
-                self._logger.warning(
+                self._logger.info(
                     "TX | %s (raw=%s, big-endian: high=0x%04X, low=0x%04X)",
                     tx_frame,
                     value,
@@ -616,7 +616,7 @@ class AnkerSolixModbusClient:
                 raw_registers = [high, low]
                 func_code = 0x10
                 tx_frame = self._format_modbus_frame(func_code, address, raw_registers)
-                self._logger.warning(
+                self._logger.info(
                     "TX | %s (raw=%s, big-endian: high=0x%04X, low=0x%04X)",
                     tx_frame,
                     value,
@@ -630,7 +630,7 @@ class AnkerSolixModbusClient:
                 raw_registers = [int(value) & 0xFFFF]
                 func_code = 0x06
                 tx_frame = self._format_modbus_frame(func_code, address, raw_registers)
-                self._logger.warning("TX | %s", tx_frame)
+                self._logger.info("TX | %s", tx_frame)
                 result = self.client.write_register(address=address, value=int(value))
 
             # Format raw registers for error logging
@@ -680,7 +680,7 @@ class AnkerSolixModbusClient:
                     tx_frame=tx_frame,
                 )
 
-            self._logger.warning(
+            self._logger.info(
                 "Write register SUCCESS | address=%d (0x%04X), value=%s, data_type=%s, raw_registers=[%s]",
                 address,
                 address,
@@ -693,7 +693,7 @@ class AnkerSolixModbusClient:
             # Catch ALL exceptions and check for "No response received"
             error_str = str(e)
             exception_type = type(e).__name__
-            self._logger.warning(
+            self._logger.error(
                 "Write register caught exception | [%s] device=%s:%d, type=%s, address=%d, value=%s, error=%s",
                 self.device_name,
                 self.ip_address,
@@ -704,7 +704,7 @@ class AnkerSolixModbusClient:
                 error_str,
             )
             if "No response received" in error_str:
-                self._logger.warning(
+                self._logger.info(
                     "📝 Write SUCCESS (device responded) | address=%d (0x%04X), value=%s, data_type=%s",
                     address,
                     address,
@@ -767,7 +767,7 @@ class AnkerSolixModbusClient:
             Dictionary of data point values
         """
         if data_points is None:
-            self._logger.warning("No data points provided, cannot read data")
+            self._logger.error("No data points provided, cannot read data")
             return {}
 
         self._logger.debug(
@@ -828,7 +828,7 @@ class AnkerSolixModbusClient:
                     continue
 
                 if not result or result.isError():
-                    self._logger.warning(
+                    self._logger.error(
                         "Failed to read configured range %d-%d (%s): %s, trying individual reads",
                         start,
                         end,
@@ -1024,7 +1024,7 @@ class AnkerSolixModbusClient:
                             config.get("data_type", "UINT16")
                         )
                         failed_reads += 1
-                        self._logger.warning(
+                        self._logger.error(
                             "Failed to decode batch data point %s: %s", key, exc
                         )
 
@@ -1037,7 +1037,7 @@ class AnkerSolixModbusClient:
             except (KeyError, TypeError, ValueError):
                 data[key] = self._default_value(config.get("data_type", "UINT16"))
                 failed_reads += 1
-                self._logger.warning(
+                self._logger.error(
                     "Invalid configuration for data point %s: %s", key, config
                 )
                 continue
@@ -1100,7 +1100,7 @@ class AnkerSolixModbusClient:
             except (IndexError, KeyError, ValueError, TypeError) as e:
                 data[key] = self._default_value(config.get("data_type", "UINT16"))
                 failed_reads += 1
-                self._logger.warning(
+                self._logger.error(
                     "Failed to decode data point %s from configured range: %s", key, e
                 )
 

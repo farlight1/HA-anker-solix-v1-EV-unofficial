@@ -13,9 +13,9 @@ product_info:
 # Batch read ranges with register type specification
 batch_read_ranges:
   input:
-    - 20000-20100  # Lee todo el bloque de sensores de golpe (Modbus soporta hasta 125 regs/petición)
+    - 20000-20100  # read all registers at once (Modbus support 125 regs/call)
   holding:
-    - 21000-21005  # Bloque de registros de control
+    - 21000-21005  # control registers
 
 # =======================================================================
 # Read Quantities Configuration (Sensor Type)
@@ -80,7 +80,7 @@ read_quantities:
     translation_key: "minimum_output_current"
     address: 20037
     data_type: "INT32"
-    unit: "A" # El PDF dice 'W' pero es un error tipográfico, es corriente.
+    unit: "A" # PDF said 'W', but is current.
     gain: 1
     count: 2
     internal: true
@@ -89,7 +89,7 @@ read_quantities:
     translation_key: "maximum_output_current"
     address: 20039
     data_type: "INT32"
-    unit: "A" # El PDF dice 'KVA' o 'W' pero lógicamente son Amperios
+    unit: "A" # PDF said 'KVA' o 'W' but there are amperes
     gain: 1
     count: 2
     internal: true
@@ -103,7 +103,7 @@ read_quantities:
     gain: 1
     count: 1
     icon: "mdi:alert-outline"
-    internal: true # Recomendado ocultarlos hasta que se decodifiquen los bits
+    internal: true # No alarm statuses documented by Anker, so we hide values
 
   alarm_information_2:
     translation_key: "alarm_information_2"
@@ -563,7 +563,7 @@ read_quantities:
     unit: "/"
     gain: 1
     count: 1
-    internal: true # Registro 20098 añadido y oculto
+    internal: true # Register 20098 added & hidden
 
   ocpp_connection_status:
     translation_key: "ocpp_connection_status"
@@ -653,9 +653,9 @@ control_items:
     translation_key: "stop_charging_btn"
     address: 21000
     data_type: "UINT16"
-    display_type: "button"      # <--- Llama al nuevo button.py
+    display_type: "button"      # <--- call button.py
     data_type_category: "control"
-    write_value: 2              # <--- Valor a enviar por Modbus
+    write_value: 2              # <--- Modbus value sent
     icon: "mdi:close-octagon"
     
   boost_mode:
@@ -671,7 +671,7 @@ control_items:
     translation_key: "maximum_current_setting"
     address: 21001
     data_type: "UINT16"
-    unit: "A" # El PDF tiene la errata de poner W aquí
+    unit: "A"
     gain: 10
     count: 1
     icon: "mdi:current-ac"
@@ -685,7 +685,7 @@ control_items:
     translation_key: "set_timeout"
     address: 21003
     data_type: "UINT16"
-    unit: "s" # El PDF tiene la errata de poner A aquí
+    unit: "s"
     gain: 1
     count: 1
     icon: "mdi:timer-outline"
@@ -706,4 +706,4 @@ control_items:
     # display_type: "input"
     # min_value: 0
     # max_value: 100
-    # internal: true # Registro 21004 reservado, pero mapeado y oculto
+    # internal: true # Register 21004 reserved, maped and hidden

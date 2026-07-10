@@ -353,16 +353,16 @@
       "cp_signal_status": {
         "name": "CP-signaalstatus",
         "state": {
-          "A_12V": "A (12V)",
-          "B1_9V": "B1 (9V)",
-          "B2_9V": "B2 (9V)",
-          "C1_6V": "C1 (6V)",
-          "C2_6V": "C2 (6V)",
-          "error": "Fout",
-          "D1_3V": "D1 (3V)",
-          "D2_3V": "D2 (3V)",
-          "E_0V": "E (0V)",
-          "F_minus_12V": "F (-12V)"
+          "A_12V": "Niet verbonden",
+          "B1_9V": "Verbonden, stand-by",
+          "B2_9V": "Verbonden, gepauzeerd",
+          "C1_6V": "Gereed voor laden",
+          "C2_6V": "Laden",
+          "error": "Fout!",
+          "D1_3V": "Gereed, ventilatie vereist",
+          "D2_3V": "Laden (met ventilatie)",
+          "E_0V": "Kortsluiting / Geen stroom",
+          "F_minus_12V": "Laadpaalstoring (EVSE)"
         }
       },
       "relay_1_temperature": {

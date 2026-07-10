@@ -353,16 +353,16 @@
       "cp_signal_status": {
         "name": "Statut du signal CP",
         "state": {
-          "A_12V": "A (12V)",
-          "B1_9V": "B1 (9V)",
-          "B2_9V": "B2 (9V)",
-          "C1_6V": "C1 (6V)",
-          "C2_6V": "C2 (6V)",
-          "error": "Erreur",
-          "D1_3V": "D1 (3V)",
-          "D2_3V": "D2 (3V)",
-          "E_0V": "E (0V)",
-          "F_minus_12V": "F (-12V)"
+          "A_12V": "Déconnecté",
+          "B1_9V": "Connecté, en attente",
+          "B2_9V": "Connecté, en pause",
+          "C1_6V": "Prêt à charger",
+          "C2_6V": "Recharge en cours",
+          "error": "Erreur !",
+          "D1_3V": "Prêt, ventilation requise",
+          "D2_3V": "Recharge en cours (avec ventilation)",
+          "E_0V": "Court-circuit / Pas d'alimentation",
+          "F_minus_12V": "Défaut de la borne (EVSE)"
         }
       },
       "relay_1_temperature": {
