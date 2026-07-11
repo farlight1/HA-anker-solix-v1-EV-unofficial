@@ -481,7 +481,7 @@ read_quantities:
     unit: "/"
     gain: 1
     count: 1
-    icon: "mdi:signal"
+    icon: "mdi:ev-plug-type2"
     value_mapping:
       0: "A_12V"
       3: "B1_9V"
